@@ -21,6 +21,10 @@
     "resolveJsonModule": true,
     "paths": {
       "@src/*": ["src/*"],
+      "@databaseUser/*": ["src/database/user/*"],
+      "@databaseProperties/*": ["src/database/property/*"],
+      "@property/*": ["src/property/*"],
+
     },
   },
   "exclude": ["node_modules", "dist"]

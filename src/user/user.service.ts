@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from './dto/user.dto';
 import { AuthenticationResponseDto } from './dto/authentication.response.dto';
 import { UserResponseDto } from './dto/user.response.dto';
-import { UsersDatabaseService } from '@src/database/user/database.service';
+import { UsersDatabaseService } from '@src/database/user/user.database.service';
 import { AuthenticationRequestDto } from './dto/authentication.request.dto';
 
 
@@ -15,6 +15,10 @@ export class UserService {
     private readonly usersDatabaseService: UsersDatabaseService,
     private readonly jwtService: JwtService,
   ) {}
+
+  status(): string {
+    return 'ok';
+  }
 
   async create(create: User): Promise<AuthenticationResponseDto> {
     try {
@@ -80,6 +84,28 @@ export class UserService {
 
       console.error(e);
       throw new HttpException('Error al buscar el usuario', 500);
+    }
+  }
+
+  async makeAdmin(email: string): Promise<UserResponseDto> {
+    try {
+      const user = await this.usersDatabaseService.findOneEmail(email);
+      if (!user) {
+        throw new BadRequestException('Usuario no encontrado');
+      }
+
+      user.admin = true;
+      await this.usersDatabaseService.create(user);
+
+      return new UserResponseDto(user);
+
+    } catch (e) {
+      if (e instanceof BadRequestException) {
+        throw e;
+      }
+
+      console.error(e);
+      throw new HttpException('Error al hacer administrador al usuario', 500);
     }
   }
 

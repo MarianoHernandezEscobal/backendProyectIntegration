@@ -10,8 +10,8 @@
       "baseUrl": "./",
       "paths": {
         "@src/*": ["src/*"],
-        "@database/*": ["src/database/*"],
-
+        "@databaseUser/*": ["src/database/user/*"],
+        "@databaseProperties/*": ["src/database/property/*"],
       },
       "target": "es2022"
     },
