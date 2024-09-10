@@ -25,18 +25,21 @@ export class PropertiesDatabaseService {
     return this.propertyRepository.findOneBy({ title });
   }
 
+  async findToApprove(): Promise<PropertyEntity[]> {
+    return this.propertyRepository.find({ where: { approved: false } });
+  }
+
   async update(property: PropertyEntity, updateDto: PropertyDto): Promise<PropertyEntity | null> {
     const updatedProperty = this.propertyRepository.merge(property, updateDto);
     const savedProperty = await this.propertyRepository.save(updatedProperty);
     return savedProperty;
   }
 
-  findHome(): Promise<PropertyEntity[] | null> {
+  async findHome(status: PropertyStatus): Promise<PropertyEntity[]> {
     return this.propertyRepository.find({
-      order: {
-        pinned: 'DESC',
-        createdAt: 'DESC',
-      },
+      where: { status, pinned: false, approved: true },
+      order: { createdAt: 'DESC' },
+      take: 12,
     });
   }
 
@@ -44,10 +47,16 @@ export class PropertiesDatabaseService {
     await this.propertyRepository.delete(id);
   }
 
-  async filterByStatus(status: PropertyStatus): Promise<PropertyEntity[]> {
-    return this.propertyRepository
-      .createQueryBuilder('property')
-      .where('property.status LIKE :status', { status: `%${status}%` })
-      .getMany();
+  async filterByStatus(status: PropertyStatus, page:number): Promise<PropertyEntity[]> {
+    return this.propertyRepository.find({
+      where: { status, approved: true },
+      order: { pinned: 'DESC',createdAt: 'DESC' },
+      skip: (page - 1) * +process.env.PAGE_SIZE,
+      take: +process.env.PAGE_SIZE,
+    });
+  }
+
+  async findPinned(): Promise<PropertyEntity[]> {
+    return this.propertyRepository.find({ where: { pinned: true, approved: true } });
   }
 }

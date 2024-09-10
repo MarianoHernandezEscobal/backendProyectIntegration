@@ -24,6 +24,8 @@
       "@databaseUser/*": ["src/database/user/*"],
       "@databaseProperties/*": ["src/database/property/*"],
       "@property/*": ["src/property/*"],
+      "@user/*": ["src/user/*"],
+
 
     },
   },

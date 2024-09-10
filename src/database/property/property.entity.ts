@@ -64,11 +64,14 @@ export class PropertyEntity {
     @Column({ default: false })
     pinned: boolean;
 
+    @Column({ default: false })
+    approved: boolean;
+
     @CreateDateColumn()
     createdAt: Date;
 
 
-    static fromDto(property: PropertyDto): PropertyEntity {
+    static fromDto(property: PropertyDto, approved: boolean): PropertyEntity {
         const entity = new PropertyEntity();
         entity.title = property.title;
         entity.description = property.description;
@@ -101,6 +104,7 @@ export class PropertyEntity {
         entity.image = property.image;
         entity.contribution = property.contribution;
         entity.pinned = false;
+        entity.approved = approved;
         return entity;
     }
 }
