@@ -23,6 +23,7 @@
       "@src/*": ["src/*"],
       "@databaseUser/*": ["src/database/user/*"],
       "@databaseProperties/*": ["src/database/property/*"],
+      "@databaseFavorites/*": ["src/database/favorite/*"],
       "@property/*": ["src/property/*"],
       "@user/*": ["src/user/*"],
 

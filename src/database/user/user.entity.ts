@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { PropertyEntity } from '../property/property.entity';
 
 @Entity()
 export class UserEntity {
@@ -22,4 +23,18 @@ export class UserEntity {
   
   @Column({ default: false })
   admin: boolean;
+
+  @ManyToMany(() => PropertyEntity, (property) => property.users)
+  @JoinTable({
+    name: 'favorites',
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'property_id',
+      referencedColumnName: 'id',
+    },
+  })
+  favoriteProperties: PropertyEntity[];
 }

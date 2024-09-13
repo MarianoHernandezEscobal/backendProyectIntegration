@@ -7,7 +7,7 @@ import { User } from '../../user/dto/user.dto';
 @Injectable()
 export class UsersDatabaseService {
   constructor(
-    @InjectRepository(UserEntity, 'USER_CONNECTION')
+    @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
   ) {}
 
@@ -20,7 +20,10 @@ export class UsersDatabaseService {
   }
 
   findOne(id: number): Promise<UserEntity | null> {
-    return this.usersRepository.findOneBy({ id });
+    return this.usersRepository.findOne({
+      where: { id },
+      relations: ['favoriteProperties'],
+    });
   }
 
   findOneEmail(email: string): Promise<UserEntity | null> {
@@ -33,5 +36,10 @@ export class UsersDatabaseService {
 
   async remove(id: number): Promise<void> {
     await this.usersRepository.delete(id);
+  }
+
+  async update(user: UserEntity): Promise<UserEntity | null> {
+    const updatedUser = await this.usersRepository.save(user);
+    return updatedUser;
   }
 }

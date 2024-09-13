@@ -8,7 +8,7 @@ import { PropertyStatus } from '@src/property/enums/status.enum';
 @Injectable()
 export class PropertiesDatabaseService {
   constructor(
-    @InjectRepository(PropertyEntity, 'PROPERTY_CONNECTION')
+    @InjectRepository(PropertyEntity,)
     private propertyRepository: Repository<PropertyEntity>,
   ) {}
 
