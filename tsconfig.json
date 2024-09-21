@@ -26,6 +26,8 @@
       "@databaseFavorites/*": ["src/database/favorite/*"],
       "@property/*": ["src/property/*"],
       "@user/*": ["src/user/*"],
+      "@clients/*": ["src/clients/*"],
+
 
 
     },

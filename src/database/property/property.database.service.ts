@@ -17,7 +17,10 @@ export class PropertiesDatabaseService {
   }
 
   findOne(id: number): Promise<PropertyEntity | null> {
-    return this.propertyRepository.findOneBy({ id });
+    return this.propertyRepository.findOne({
+      where: { id },
+      relations: ['users'],
+    });
   }
 
   

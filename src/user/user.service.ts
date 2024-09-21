@@ -40,7 +40,7 @@ export class UserService {
       if (existingUser) {
         throw new BadRequestException('Email ya está en uso');
       }
-
+      create.phone = User.formatPhoneNumber(create.phone);
       create.password = await this.hashPassword(create.password);
       const savedUser = await this.usersDatabaseService.create(create);
       const jwt = await this.generateJwt(savedUser);
@@ -58,7 +58,7 @@ export class UserService {
       if (!isPasswordValid) {
         throw new BadRequestException('Contraseña incorrecta');
       }
-
+      delete existingUser.password;
       const jwt = await this.generateJwt(existingUser);
       return { access_token: jwt };
     } catch (e) {

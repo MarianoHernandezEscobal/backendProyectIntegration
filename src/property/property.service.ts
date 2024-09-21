@@ -6,11 +6,21 @@ import { PropertyPlpDto } from './dto/property.plp.dto';
 import { PropertyStatus } from './enums/status.enum';
 import { Home } from './dto/home.response.dto';
 import { UserResponseDto } from '@user/dto/user.response.dto';
+import { FacebookClient } from '@clients/facebook/facebook.client';
+import { CreatePost } from './dto/facebook.create.request.dto';
+import { MercadoLibreClient } from '@src/clients/mercadoLibre/mercadoLibre.client';
+import { firstValueFrom } from 'rxjs';
+import { WhatsAppClient } from '@src/clients/whatsapp/whatsapp.client';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class PropertyService {
   constructor(
     private readonly propertiesDatabaseService: PropertiesDatabaseService,
+    private readonly facebookService: FacebookClient,
+    private readonly mercadoLibreService: MercadoLibreClient,
+    private readonly whatsApp: WhatsAppClient
+
   ) {}
 
   private handleException(e: any, message: string): void {
@@ -33,6 +43,12 @@ export class PropertyService {
       await this.validatePropertyTitle(create.title);
       const entity = PropertyEntity.fromDto(create, user.admin);
       const savedProperty = await this.propertiesDatabaseService.create(entity);
+
+      if (savedProperty.approved) {
+        //const response = await firstValueFrom(this.mercadoLibreService.getAccessToken(''));
+        await firstValueFrom(this.facebookService.createPost(new CreatePost(savedProperty)));
+      }
+
       return new PropertyDto(savedProperty);
     } catch (e) {
       this.handleException(e, 'Error al crear la propiedad');
@@ -87,7 +103,15 @@ export class PropertyService {
         delete updateDto.approved;
       }
 
+      const oldProperty = new PropertyDto(property);
+
       const updatedProperty = await this.propertiesDatabaseService.update(property, updateDto);
+
+      if(updatedProperty.approved){
+        await this.updatePostFacebook(updatedProperty, oldProperty);
+        await this.sendMessages(updatedProperty);
+      }
+      
       return new PropertyDto(updatedProperty);
     } catch (e) {
       this.handleException(e, 'Error al actualizar la propiedad');
@@ -126,6 +150,54 @@ export class PropertyService {
       return properties.map(property => new PropertyPlpDto(property));
     } catch (e) {
       this.handleException(e, 'Error al filtrar las propiedades');
+    }
+  }
+
+  private async sendMessages(property: PropertyEntity): Promise<void> {
+    const {URL_INMO} = process.env;
+    const propertie = await this.propertiesDatabaseService.findOne(property.id);
+    const users = propertie.users;
+    users.forEach(user => {
+      this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);	
+    });
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async renewFacebookTokens() {
+    try {
+      const userTokenResponse = await firstValueFrom(this.facebookService.renewAccessTokenUser());
+      process.env.FACEBOOK_USER_ACCESSTOKEN = userTokenResponse.access_token;
+      console.log('Nuevo User Access Token:', userTokenResponse.access_token);
+
+      const pageTokensResponse = await firstValueFrom(this.facebookService.renewAccessTokenPage());
+      console.log('Nuevo Page Access Token:', pageTokensResponse.data);
+
+      const pageAccessToken = pageTokensResponse.data[0]?.access_token;
+      if (pageAccessToken) {
+        process.env.FACEBOOK_ACCESSTOKEN = pageAccessToken;
+        console.log('Nuevo Page Access Token:', pageAccessToken);
+      }
+
+    } catch (error) {
+      console.error('Error al renovar el Access Token:', error);
+    }
+  }
+
+  private async updatePostFacebook(updatedProperty: PropertyEntity, oldProperty: PropertyDto): Promise<void> {
+    try {
+      const post = await firstValueFrom(this.facebookService.getPost());
+      if (!post) {
+        return;
+      }
+      const filterPost = post.find(p => p.message === `${oldProperty.title}\n${oldProperty.description}`);
+      if (filterPost) {
+        await firstValueFrom(this.facebookService.updatePost(new CreatePost(updatedProperty), filterPost.id));
+        return;
+      }
+      await firstValueFrom(this.facebookService.createPost(new CreatePost(updatedProperty)));
+
+    } catch (error) {
+      console.error('Error al actualizar el post de Facebook:', error);
     }
   }
 }

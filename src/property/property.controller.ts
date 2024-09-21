@@ -6,6 +6,7 @@ import { Home } from './dto/home.response.dto';
 import { AuthGuard } from '@src/user/guards/session.guard';
 import { RequestWithUser } from '@user/interfaces/request.interface';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @ApiTags('Properties')
 @Controller('property')
@@ -90,4 +91,8 @@ export class PropertyController {
     return await this.propertyService.findToApprove();
   }
 
+  @Get('testTokens')
+  async testTokens() {
+    await this.propertyService.renewFacebookTokens();
+  }
 }
