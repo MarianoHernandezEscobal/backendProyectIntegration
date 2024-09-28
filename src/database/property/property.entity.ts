@@ -3,8 +3,9 @@ import { GeoCoordinatesDto } from '@src/property/dto/geoCoordinates.dto';
 import { PropertyDto } from '@src/property/dto/property.dto';
 import { PropertyStatus } from '@src/property/enums/status.enum';
 import { PropertyTypes } from '@src/property/enums/types.enum';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToMany, OneToMany } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
+import { RentEntity } from '../rents/rents.entity';
 
 @Entity()
 export class PropertyEntity {
@@ -76,6 +77,8 @@ export class PropertyEntity {
     @ManyToMany(() => UserEntity, (user) => user.favoriteProperties)
     users: UserEntity[];
 
+    @OneToMany('RentEntity', 'property')
+    rents: RentEntity[];
 
     static fromDto(property: PropertyDto, approved: boolean): PropertyEntity {
         const entity = new PropertyEntity();

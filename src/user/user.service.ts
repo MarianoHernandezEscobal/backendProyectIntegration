@@ -6,6 +6,7 @@ import { AuthenticationResponseDto } from './dto/authentication.response.dto';
 import { UserResponseDto } from './dto/user.response.dto';
 import { UsersDatabaseService } from '@src/database/user/user.database.service';
 import { AuthenticationRequestDto } from './dto/authentication.request.dto';
+import { MESSAGES } from '@constants/messages';
 
 @Injectable()
 export class UserService {
@@ -21,7 +22,7 @@ export class UserService {
   private async findUserByEmailOrThrow(email: string): Promise<User> {
     const user = await this.usersDatabaseService.findOneEmail(email);
     if (!user) {
-      throw new BadRequestException('Usuario no encontrado');
+      throw new BadRequestException(MESSAGES.USER_NOT_FOUND);
     }
     return user;
   }

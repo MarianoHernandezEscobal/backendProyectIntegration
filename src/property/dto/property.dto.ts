@@ -4,6 +4,8 @@ import { PropertyEntity } from "@databaseProperties/property.entity";
 import { PropertyStatus } from "../enums/status.enum";
 import { IsArray, IsEnum, IsNumber, IsString, IsBoolean, IsDate, IsOptional } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
+import { User } from "@src/user/dto/user.dto";
+import { RentDTO } from "@src/rent/dto/rent.dto";
 
 export class PropertyDto {
 

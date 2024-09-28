@@ -49,7 +49,7 @@ export class FavoritesDatabaseService {
     }
 
     user.favoriteProperties = user.favoriteProperties.filter((fav) => fav.id !== propertyId);
-    await this.userRepository.save(user); // Guardar los cambios
+    await this.userRepository.save(user);
   }
 
   async getFavorites(userId: number): Promise<PropertyEntity[]> {

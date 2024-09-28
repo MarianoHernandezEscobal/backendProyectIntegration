@@ -24,11 +24,11 @@
       "@databaseUser/*": ["src/database/user/*"],
       "@databaseProperties/*": ["src/database/property/*"],
       "@databaseFavorites/*": ["src/database/favorite/*"],
+      "@databaseRent/*": ["src/database/rents/*"],
       "@property/*": ["src/property/*"],
       "@user/*": ["src/user/*"],
       "@clients/*": ["src/clients/*"],
-
-
+      "@constants/*": ["src/constants/*"],
 
     },
   },

@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { PropertyEntity } from '../property/property.entity';
+import { RentEntity } from '../rents/rents.entity';
 
 @Entity()
 export class UserEntity {
@@ -44,4 +45,8 @@ export class UserEntity {
     },
   })
   favoriteProperties: PropertyEntity[];
+
+  @OneToMany('RentEntity', 'user')
+  rents: RentEntity[];
+
 }

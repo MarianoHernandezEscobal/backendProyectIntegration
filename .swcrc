@@ -12,6 +12,11 @@
         "@src/*": ["src/*"],
         "@databaseUser/*": ["src/database/user/*"],
         "@databaseProperties/*": ["src/database/property/*"],
+        "@databaseFavorites/*": ["src/database/favorite/*"],
+        "@databaseRent/*": ["src/database/rents/*"],
+        "@property/*": ["src/property/*"],
+        "@user/*": ["src/user/*"],
+        "@clients/*": ["src/clients/*"],
       },
       "target": "es2022"
     },

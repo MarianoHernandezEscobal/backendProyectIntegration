@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PropertyDto } from '@src/property/dto/property.dto';
+import { RentDTO } from '@src/rent/dto/rent.dto';
 
 export class User {
     @ApiProperty({ description: 'ID del usuario', example: 1 })
