@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { GeoCoordinatesDto } from '@src/property/dto/geoCoordinates.dto';
 import { PropertyDto } from '@src/property/dto/property.dto';
-import { PropertyStatus } from '@src/property/enums/status.enum';
-import { PropertyTypes } from '@src/property/enums/types.enum';
+import { PropertyStatus } from '@src/enums/status.enum';
+import { PropertyTypes } from '@src/enums/types.enum';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToMany, OneToMany } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { RentEntity } from '../rents/rents.entity';

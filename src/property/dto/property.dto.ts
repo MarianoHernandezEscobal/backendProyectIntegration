@@ -1,7 +1,7 @@
-import { PropertyTypes } from "@src/property/enums/types.enum";
+import { PropertyTypes } from "@src/enums/types.enum";
 import { GeoCoordinatesDto } from "@src/property/dto/geoCoordinates.dto";
 import { PropertyEntity } from "@databaseProperties/property.entity";
-import { PropertyStatus } from "../enums/status.enum";
+import { PropertyStatus } from "../../enums/status.enum";
 import { IsArray, IsEnum, IsNumber, IsString, IsBoolean, IsDate, IsOptional } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 import { User } from "@src/user/dto/user.dto";

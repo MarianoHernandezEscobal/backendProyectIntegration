@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PropertyEntity } from '@databaseProperties/property.entity';
-import { PropertyStatus } from '../enums/status.enum';
-import { PropertyTypes } from '../enums/types.enum';
+import { PropertyStatus } from '../../enums/status.enum';
+import { PropertyTypes } from '../../enums/types.enum';
 
 export class PropertyPlpDto {
   @ApiProperty({ description: 'ID de la propiedad' })

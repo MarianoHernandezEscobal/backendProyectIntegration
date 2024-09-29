@@ -34,7 +34,7 @@ export class RentsDatabaseService {
 
     findPropertyRents(property: PropertyEntity): Promise<RentEntity[]> {
         return this.rentRepository.find({
-            where: { property },
+            where: { property: { id: property.id } },
         });
     }
 
@@ -50,15 +50,4 @@ export class RentsDatabaseService {
     async remove(id: number): Promise<void> {
         await this.rentRepository.delete(id);
     }
-
-    async filterByStatus(approved: boolean, page:number): Promise<RentEntity[]> {
-        return this.rentRepository.find({
-            where: { approved },
-            order: { createdAt: 'DESC' },
-            skip: (page - 1) * +process.env.PAGE_SIZE,
-            take: +process.env.PAGE_SIZE,
-        });
-    }
-
-
 }

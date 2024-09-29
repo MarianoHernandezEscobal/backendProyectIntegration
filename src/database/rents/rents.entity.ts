@@ -32,12 +32,12 @@ export class RentEntity {
     property: PropertyEntity;
 
 
-    static fromDto(rent: RentDTO, user: UserEntity, property: PropertyEntity): RentEntity {
+    static fromDto(rent: RentDTO, user: UserEntity, property: PropertyEntity, userAdmin: boolean): RentEntity {
         const entity = new RentEntity();
         entity.dateStart = rent.dateStart;
         entity.dateEnd = rent.dateEnd;
         entity.price = property.price * (entity.dateEnd.getDate() - entity.dateStart.getDate());
-        entity.approved = user.admin;
+        entity.approved = userAdmin;
         entity.user = user;
         entity.property = property;
         return entity;

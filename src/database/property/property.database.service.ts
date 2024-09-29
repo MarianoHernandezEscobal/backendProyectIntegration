@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 import { PropertyEntity } from './property.entity';
 import { PropertyDto } from '@src/property/dto/property.dto';
-import { PropertyStatus } from '@src/property/enums/status.enum';
+import { PropertyStatus } from '@src/enums/status.enum';
 
 @Injectable()
 export class PropertiesDatabaseService {
@@ -16,10 +16,21 @@ export class PropertiesDatabaseService {
     return this.propertyRepository.save(property);
   }
 
-  findOne(id: number): Promise<PropertyEntity | null> {
-    return this.propertyRepository.findOne({
+  findOne(id: number, relations?: string[]): Promise<PropertyEntity | null> {
+    const options: FindOneOptions<PropertyEntity> = {
       where: { id },
-      relations: ['users'],
+    };
+
+    if (relations && relations.length > 0) {
+      options.relations = relations;
+    }
+
+    return this.propertyRepository.findOne(options);
+  }
+
+  findOneByStatus(id: number, status: PropertyStatus): Promise<PropertyEntity | null> {
+    return this.propertyRepository.findOne({
+      where: { id, status },
     });
   }
 

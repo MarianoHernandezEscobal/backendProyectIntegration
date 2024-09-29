@@ -3,7 +3,7 @@ import { PropertyDto } from './dto/property.dto';
 import { PropertiesDatabaseService } from '@databaseProperties/property.database.service';
 import { PropertyEntity } from '@databaseProperties/property.entity';
 import { PropertyPlpDto } from './dto/property.plp.dto';
-import { PropertyStatus } from './enums/status.enum';
+import { PropertyStatus } from '../enums/status.enum';
 import { Home } from './dto/home.response.dto';
 import { UserResponseDto } from '@user/dto/user.response.dto';
 import { FacebookClient } from '@clients/facebook/facebook.client';
@@ -155,7 +155,7 @@ export class PropertyService {
 
   private async sendMessages(property: PropertyEntity): Promise<void> {
     const {URL_INMO} = process.env;
-    const propertie = await this.propertiesDatabaseService.findOne(property.id);
+    const propertie = await this.propertiesDatabaseService.findOne(property.id, ['users']);
     const users = propertie.users;
     users.forEach(user => {
       this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);	
