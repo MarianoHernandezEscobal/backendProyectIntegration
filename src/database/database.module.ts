@@ -7,17 +7,19 @@ import { PropertiesDatabaseService } from './property/property.database.service'
 import { FavoritesDatabaseService } from './favorite/favorite.database.service';
 import { RentEntity } from './rents/rents.entity';
 import { RentsDatabaseService } from './rents/rent.database.service';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
-      useFactory: () => ({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
         type: 'mysql',
-        host: process.env.DB_HOST,
-        port: parseInt(process.env.DB_PORT),
-        username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
+        host: configService.get<string>('DB_HOST'),
+        port: configService.get<number>('DB_PORT'),
+        username: configService.get<string>('DB_USERNAME'),
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_NAME'),
         entities: [UserEntity, PropertyEntity, RentEntity],
         synchronize: true,
       }),

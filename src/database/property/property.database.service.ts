@@ -4,12 +4,14 @@ import { FindOneOptions, Repository } from 'typeorm';
 import { PropertyEntity } from './property.entity';
 import { PropertyDto } from '@src/property/dto/property.dto';
 import { PropertyStatus } from '@src/enums/status.enum';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PropertiesDatabaseService {
   constructor(
     @InjectRepository(PropertyEntity,)
     private propertyRepository: Repository<PropertyEntity>,
+    private readonly configService: ConfigService,
   ) {}
 
   create(property: PropertyEntity): Promise<PropertyEntity | null> {
@@ -62,11 +64,12 @@ export class PropertiesDatabaseService {
   }
 
   async filterByStatus(status: PropertyStatus, page:number): Promise<PropertyEntity[]> {
+    const pageSize = +this.configService.get<string>('PAGE_SIZE')
     return this.propertyRepository.find({
       where: { status, approved: true },
       order: { pinned: 'DESC',createdAt: 'DESC' },
-      skip: (page - 1) * +process.env.PAGE_SIZE,
-      take: +process.env.PAGE_SIZE,
+      skip: (page - 1) * + pageSize,
+      take: pageSize,
     });
   }
 

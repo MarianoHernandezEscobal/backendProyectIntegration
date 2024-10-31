@@ -8,12 +8,15 @@ import { UsersDatabaseService } from '@src/database/user/user.database.service';
 import { AuthenticationRequestDto } from './dto/authentication.request.dto';
 import { MESSAGES } from '@constants/messages';
 import { UserEntity } from '@src/database/user/user.entity';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly usersDatabaseService: UsersDatabaseService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+
   ) {}
 
   status(): string {
@@ -107,7 +110,8 @@ export class UserService {
   }
 
   private async hashPassword(password: string): Promise<string> {
-    const saltRounds = +process.env.SALT || 10;
+
+    const saltRounds = +this.configService.get<string>('SALT') || 10;
     return bcrypt.hash(password, saltRounds);
   }
 }

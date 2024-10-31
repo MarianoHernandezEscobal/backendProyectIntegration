@@ -11,13 +11,16 @@ import { CreatePost } from './dto/facebook.create.request.dto';
 import { firstValueFrom } from 'rxjs';
 //import { WhatsAppClient } from '@src/clients/whatsapp/whatsapp.client';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PropertyService {
   constructor(
     private readonly propertiesDatabaseService: PropertiesDatabaseService,
     private readonly facebookService: FacebookClient,
-    //private readonly whatsApp: WhatsAppClient
+    //private readonly whatsApp: WhatsAppClient,
+    private readonly configService: ConfigService,
+
 
   ) {}
 
@@ -151,11 +154,11 @@ export class PropertyService {
   }
 
   private async sendMessages(property: PropertyEntity): Promise<void> {
-    const {URL_INMO} = process.env;
+    const URL_INMO = this.configService.get<string>('URL_INMO');
     const propertie = await this.propertiesDatabaseService.findOne(property.id, ['users']);
     const users = propertie.users;
     users.forEach(user => {
-      //this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);	
+      // this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);
     });
   }
 
@@ -163,22 +166,23 @@ export class PropertyService {
   async renewFacebookTokens() {
     try {
       const userTokenResponse = await firstValueFrom(this.facebookService.renewAccessTokenUser());
-      process.env.FACEBOOK_USER_ACCESSTOKEN = userTokenResponse.access_token;
+      this.configService.get<string>('FACEBOOK_USER_ACCESSTOKEN', userTokenResponse.access_token); // Actualiza con ConfigService
       console.log('Nuevo User Access Token:', userTokenResponse.access_token);
-
+  
       const pageTokensResponse = await firstValueFrom(this.facebookService.renewAccessTokenPage());
       console.log('Nuevo Page Access Token:', pageTokensResponse.data);
-
+  
       const pageAccessToken = pageTokensResponse.data[0]?.access_token;
       if (pageAccessToken) {
-        process.env.FACEBOOK_ACCESSTOKEN = pageAccessToken;
+        this.configService.get<string>('FACEBOOK_ACCESSTOKEN', pageAccessToken); // Actualiza con ConfigService
         console.log('Nuevo Page Access Token:', pageAccessToken);
       }
-
+  
     } catch (error) {
       console.error('Error al renovar el Access Token:', error);
     }
   }
+  
 
   private async updatePostFacebook(updatedProperty: PropertyEntity, oldProperty: PropertyDto): Promise<void> {
     try {

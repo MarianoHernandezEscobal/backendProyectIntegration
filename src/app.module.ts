@@ -9,9 +9,8 @@ import { RentModule } from './rent/rent.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,
+      isGlobal: true,     
       envFilePath: '.env',
-      validationSchema,
     }),
     PropertyModule,
     UserModule,
