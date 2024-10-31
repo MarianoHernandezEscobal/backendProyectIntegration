@@ -9,7 +9,7 @@ import { UserResponseDto } from '@user/dto/user.response.dto';
 import { FacebookClient } from '@clients/facebook/facebook.client';
 import { CreatePost } from './dto/facebook.create.request.dto';
 import { firstValueFrom } from 'rxjs';
-import { WhatsAppClient } from '@src/clients/whatsapp/whatsapp.client';
+//import { WhatsAppClient } from '@src/clients/whatsapp/whatsapp.client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class PropertyService {
   constructor(
     private readonly propertiesDatabaseService: PropertiesDatabaseService,
     private readonly facebookService: FacebookClient,
-    private readonly whatsApp: WhatsAppClient
+    //private readonly whatsApp: WhatsAppClient
 
   ) {}
 
@@ -155,7 +155,7 @@ export class PropertyService {
     const propertie = await this.propertiesDatabaseService.findOne(property.id, ['users']);
     const users = propertie.users;
     users.forEach(user => {
-      this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);	
+      //this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);	
     });
   }
 
