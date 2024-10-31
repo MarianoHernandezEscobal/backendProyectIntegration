@@ -8,7 +8,6 @@ import { Home } from './dto/home.response.dto';
 import { UserResponseDto } from '@user/dto/user.response.dto';
 import { FacebookClient } from '@clients/facebook/facebook.client';
 import { CreatePost } from './dto/facebook.create.request.dto';
-import { MercadoLibreClient } from '@src/clients/mercadoLibre/mercadoLibre.client';
 import { firstValueFrom } from 'rxjs';
 import { WhatsAppClient } from '@src/clients/whatsapp/whatsapp.client';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -18,8 +17,7 @@ export class PropertyService {
   constructor(
     private readonly propertiesDatabaseService: PropertiesDatabaseService,
     private readonly facebookService: FacebookClient,
-    private readonly mercadoLibreService: MercadoLibreClient,
-    //private readonly whatsApp: WhatsAppClient
+    private readonly whatsApp: WhatsAppClient
 
   ) {}
 
@@ -45,7 +43,6 @@ export class PropertyService {
       const savedProperty = await this.propertiesDatabaseService.create(entity);
 
       if (savedProperty.approved) {
-        //const response = await firstValueFrom(this.mercadoLibreService.getAccessToken(''));
         await firstValueFrom(this.facebookService.createPost(new CreatePost(savedProperty)));
       }
 
@@ -158,7 +155,7 @@ export class PropertyService {
     const propertie = await this.propertiesDatabaseService.findOne(property.id, ['users']);
     const users = propertie.users;
     users.forEach(user => {
-      //this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);	
+      this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);	
     });
   }
 

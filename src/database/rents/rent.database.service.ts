@@ -47,6 +47,10 @@ export class RentsDatabaseService {
         return updatedRent;
     }
 
+    async findOne(id: number): Promise<RentEntity | null> {
+        return this.rentRepository.findOne({ where: { id } });
+    }
+
     async remove(id: number): Promise<void> {
         await this.rentRepository.delete(id);
     }

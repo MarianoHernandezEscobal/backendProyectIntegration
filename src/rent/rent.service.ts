@@ -79,6 +79,17 @@ export class RentService {
   async findToApproved(): Promise<RentEntity[]> {
     return await this.rentsDatabaseService.findToApprove();
   }
+
+  async approveRent(rentId: number): Promise<void> {
+    const rent = await this.rentsDatabaseService.findOne(rentId);
+
+    if (!rent) {
+      throw new NotFoundException(MESSAGES.RENT_NOT_FOUND);
+    }
+
+    rent.approved = true;
+    this.rentsDatabaseService.update(rent);
+  }
 }
 
 

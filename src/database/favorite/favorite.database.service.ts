@@ -9,45 +9,15 @@ export class FavoritesDatabaseService {
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
-
-    @InjectRepository(PropertyEntity)
-    private propertyRepository: Repository<PropertyEntity>,
   ) {}
 
-  async addFavorite(userId: number, propertyId: number): Promise<void> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['favoriteProperties'],
-    });
-
-    if (!user) {
-      throw new Error('Usuario no encontrado');
-    }
-
-    const property = await this.propertyRepository.findOne({ where: { id: propertyId } });
-
-    if (!property) {
-      throw new Error('Propiedad no encontrada');
-    }
-
-    if (user.favoriteProperties.find((fav) => fav.id === propertyId)) {
-      return;
-    }
-
+  async addFavoriteProperty(user: UserEntity, property: PropertyEntity): Promise<UserEntity | null> {
     user.favoriteProperties.push(property);
-    await this.userRepository.save(user);
+    const updatedUser = await this.userRepository.save(user);
+    return updatedUser;
   }
 
-  async removeFavorite(userId: number, propertyId: number): Promise<void> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['favoriteProperties'],
-    });
-
-    if (!user) {
-      throw new Error('Usuario no encontrado');
-    }
-
+  async removeFavorite(user: UserEntity, propertyId: number): Promise<void> {
     user.favoriteProperties = user.favoriteProperties.filter((fav) => fav.id !== propertyId);
     await this.userRepository.save(user);
   }

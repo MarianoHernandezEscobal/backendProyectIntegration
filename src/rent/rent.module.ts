@@ -6,11 +6,13 @@ import { RentController } from './rent.controller';
 import { DatabaseModule } from '@src/database/database.module';
 import { RentService } from './rent.service';
 import { RentEntity } from '@src/database/rents/rents.entity';
+import { UserModule } from '@user/user.module';
 
 
 @Module({
   imports: [
     DatabaseModule,
+    UserModule,
     TypeOrmModule.forFeature([UserEntity, PropertyEntity, RentEntity]),
   ],
   providers: [RentService],

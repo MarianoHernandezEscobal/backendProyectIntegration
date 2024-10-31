@@ -17,6 +17,8 @@
         "@property/*": ["src/property/*"],
         "@user/*": ["src/user/*"],
         "@clients/*": ["src/clients/*"],
+        "@database/*": ["src/database/*"],
+
       },
       "target": "es2022"
     },

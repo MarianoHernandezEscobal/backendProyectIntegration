@@ -61,4 +61,15 @@ export class UserController {
   async makeAdmin(@Query('email') email: string): Promise<UserResponseDto> {
     return await this.userService.makeAdmin(email);
   }
+
+  @Put('update') 
+  @ApiOperation({ summary: 'Update user information' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard)
+  @ApiBody({ type: User })
+  @ApiResponse({ status: 200, description: 'User updated', type: UserResponseDto })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async update(@Body('user') user: User, @Req() request: RequestWithUser): Promise<UserResponseDto> {
+    return await this.userService.update(user, request.user.email);
+  }
 }

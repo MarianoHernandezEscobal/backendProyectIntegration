@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { FacebookClient } from './facebook/facebook.client';
 import { HttpModule } from '@nestjs/axios';
-import { MercadoLibreClient } from './mercadoLibre/mercadoLibre.client';
 import { WhatsAppClient } from './whatsapp/whatsapp.client';
 
 
@@ -12,7 +11,7 @@ import { WhatsAppClient } from './whatsapp/whatsapp.client';
         maxRedirects: 5
     })
 ],
-  providers: [FacebookClient, MercadoLibreClient ],//WhatsAppClient
-  exports: [FacebookClient, MercadoLibreClient ],//WhatsAppClient
+  providers: [FacebookClient, WhatsAppClient],//WhatsAppClient
+  exports: [FacebookClient, WhatsAppClient],//WhatsAppClient
 })
 export class ClientsModule {}

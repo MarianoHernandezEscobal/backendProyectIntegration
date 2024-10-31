@@ -2,12 +2,14 @@ import { BadRequestException, HttpException, Injectable, NotFoundException, Unau
 import { UsersDatabaseService } from "@databaseUser/user.database.service";
 import { PropertiesDatabaseService } from "@databaseProperties/property.database.service";
 import { PropertyEntity } from "@databaseProperties/property.entity";
+import { FavoritesDatabaseService } from "@src/database/favorite/favorite.database.service";
 
 @Injectable()
 export class FavoritesService {
   constructor(
     private readonly usersDatabaseService: UsersDatabaseService,
     private readonly propertiesDatabaseService: PropertiesDatabaseService,
+    private readonly favoritesDatabaseService: FavoritesDatabaseService,
   ) {}
 
   private handleException(e: any, message: string): void {
@@ -35,9 +37,7 @@ export class FavoritesService {
         if (user.favoriteProperties.find((fav) => fav.id === propertyId)) {
             return;
         }
-
-        user.favoriteProperties.push(property);
-        await this.usersDatabaseService.update(user);
+        await this.favoritesDatabaseService.addFavoriteProperty(user, property);
     } catch (e) {
         this.handleException(e, 'Error al añadir a favoritos');
     }
@@ -50,15 +50,14 @@ export class FavoritesService {
       throw new Error('Usuario no encontrado');
     }
 
-    user.favoriteProperties = user.favoriteProperties.filter((fav) => fav.id !== propertyId);
-    await this.usersDatabaseService.update(user);
+    await this.favoritesDatabaseService.removeFavorite(user, propertyId);
     return user.favoriteProperties || [];
   }
 
   async getFavorites(userId: number): Promise<PropertyEntity[]> {
-    const user = await this.usersDatabaseService.findOne(userId);
+    const favoriteProperties = await this.favoritesDatabaseService.getFavorites(userId);
 
-    return user.favoriteProperties || [];
+    return favoriteProperties || [];
   }
 }
 

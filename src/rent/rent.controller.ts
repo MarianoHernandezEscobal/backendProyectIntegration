@@ -39,4 +39,10 @@ export class RentController {
   ): Promise<RentEntity[]> {
     return await this.rentService.findToApproved();
   }
+
+  @Get('approved')
+  async approveRent(
+  ): Promise<RentEntity[]> {
+    return await this.rentService.findToApproved();
+  }
 }

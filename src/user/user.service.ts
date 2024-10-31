@@ -7,6 +7,7 @@ import { UserResponseDto } from './dto/user.response.dto';
 import { UsersDatabaseService } from '@src/database/user/user.database.service';
 import { AuthenticationRequestDto } from './dto/authentication.request.dto';
 import { MESSAGES } from '@constants/messages';
+import { UserEntity } from '@src/database/user/user.entity';
 
 @Injectable()
 export class UserService {
@@ -19,7 +20,7 @@ export class UserService {
     return 'ok';
   }
 
-  private async findUserByEmailOrThrow(email: string): Promise<User> {
+  private async findUserByEmailOrThrow(email: string): Promise<UserEntity> {
     const user = await this.usersDatabaseService.findOneEmail(email);
     if (!user) {
       throw new BadRequestException(MESSAGES.USER_NOT_FOUND);
@@ -79,12 +80,23 @@ export class UserService {
   async makeAdmin(email: string): Promise<UserResponseDto> {
     try {
       const user = await this.findUserByEmailOrThrow(email);
-      user.admin = true;
-      await this.usersDatabaseService.create(user);
+      await this.usersDatabaseService.makeAdmin(user);
 
       return new UserResponseDto(user);
     } catch (e) {
       this.handleException(e, 'Error al hacer administrador al usuario');
+    }
+  }
+
+  async update(update: User, email: string): Promise<UserResponseDto> {
+    try {
+      const user = await this.findUserByEmailOrThrow(email);
+      update.phone = User.formatPhoneNumber(update.phone);
+      update.password = await this.hashPassword(update.password);
+      const updatedUser = await this.usersDatabaseService.update(user, update);
+      return new UserResponseDto(updatedUser);
+    } catch (e) {
+      this.handleException(e, 'Error al actualizar el usuario');
     }
   }
 
