@@ -5,6 +5,7 @@ import { PropertyEntity } from './property.entity';
 import { PropertyDto } from '@src/property/dto/property.dto';
 import { PropertyStatus } from '@src/enums/status.enum';
 import { ConfigService } from '@nestjs/config';
+import { User } from '@src/user/dto/user.dto';
 
 @Injectable()
 export class PropertiesDatabaseService {
@@ -55,7 +56,6 @@ export class PropertiesDatabaseService {
     return this.propertyRepository.find({
       where: { status, pinned: false, approved: true },
       order: { createdAt: 'DESC' },
-      take: 12,
     });
   }
 
@@ -75,5 +75,13 @@ export class PropertiesDatabaseService {
 
   async findPinned(): Promise<PropertyEntity[]> {
     return this.propertyRepository.find({ where: { pinned: true, approved: true } });
+  }
+
+  async findCreatedProperties(userId: number): Promise<PropertyEntity[]> {
+    return this.propertyRepository.find({ where: { createdBy: { id: userId } } });
+  }
+
+  async findAll(): Promise<PropertyEntity[]> {
+    return this.propertyRepository.find();
   }
 }

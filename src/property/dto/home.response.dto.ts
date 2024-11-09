@@ -1,13 +1,19 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { PropertyPlpDto } from "./property.plp.dto";
+import { PropertyDto } from "./property.dto";
 
 export class Home{
-    @ApiProperty({ type: [PropertyPlpDto], description: 'Propiedades en alquiler' })
-    rent: PropertyPlpDto[];
+    @ApiProperty({ type: [PropertyDto], description: 'Propiedades en alquiler' })
+    rent: PropertyDto[];
   
-    @ApiProperty({ type: [PropertyPlpDto], description: 'Propiedades en venta' })
-    sale: PropertyPlpDto[];
+    @ApiProperty({ type: [PropertyDto], description: 'Propiedades en venta' })
+    sale: PropertyDto[];
   
-    @ApiProperty({ type: [PropertyPlpDto], description: 'Propiedades pineadas' })
-    pined: PropertyPlpDto[];
+    @ApiProperty({ type: [PropertyDto], description: 'Propiedades pineadas' })
+    pinned: PropertyDto[];
+
+    @ApiProperty({ type: [PropertyDto], description: 'Propiedades favoritas' })
+    favourites?: PropertyDto[];
+
+    @ApiProperty({ type: [PropertyDto], description: 'Propiedades creadas' })
+    created?: PropertyDto[];
 }

@@ -32,19 +32,22 @@ export class UserEntity {
   @Column({ default: false })
   admin: boolean;
 
-  @ManyToMany(() => PropertyEntity, (property) => property.users)
+  @ManyToMany('PropertyEntity', 'usersWithFavourite')
   @JoinTable({
-    name: 'favorites',
-    joinColumn: {
-      name: 'user_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'property_id',
-      referencedColumnName: 'id',
-    },
+      name: 'favorites',
+      joinColumn: {
+        name: 'user_id',
+        referencedColumnName: 'id',
+      },
+      inverseJoinColumn: {
+        name: 'property_id',
+        referencedColumnName: 'id',
+      },
   })
   favoriteProperties: PropertyEntity[];
+  
+  @OneToMany('PropertyEntity', 'createdBy')
+  propertiesCreated: PropertyEntity[];
 
   @OneToMany('RentEntity', 'user')
   rents: RentEntity[];

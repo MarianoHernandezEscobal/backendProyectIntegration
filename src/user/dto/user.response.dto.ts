@@ -20,9 +20,13 @@ export class UserResponseDto {
     @ApiProperty({ description: 'Indica si el usuario es administrador', example: false })
     admin: boolean;
 
+    @ApiProperty({ description: 'Indica si el usuario es administrador', example: false })
+    phone: string;
+
     constructor(user: User) {
         this.firstName = user.firstName;
         this.email = user.email;
+        this.phone = user.phone;
         this.lastName = user.lastName;
         this.isActive = user.isActive;
         this.admin = user.admin;

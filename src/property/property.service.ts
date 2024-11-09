@@ -2,26 +2,26 @@ import { Injectable, BadRequestException, HttpException, NotFoundException, Unau
 import { PropertyDto } from './dto/property.dto';
 import { PropertiesDatabaseService } from '@databaseProperties/property.database.service';
 import { PropertyEntity } from '@databaseProperties/property.entity';
-import { PropertyPlpDto } from './dto/property.plp.dto';
 import { PropertyStatus } from '../enums/status.enum';
 import { Home } from './dto/home.response.dto';
 import { UserResponseDto } from '@user/dto/user.response.dto';
 import { FacebookClient } from '@clients/facebook/facebook.client';
 import { CreatePost } from './dto/facebook.create.request.dto';
 import { firstValueFrom } from 'rxjs';
-//import { WhatsAppClient } from '@src/clients/whatsapp/whatsapp.client';
+import { WhatsAppClient } from '@src/clients/whatsapp/whatsapp.client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
+import { UsersDatabaseService } from '@databaseUser/user.database.service';
+import { MESSAGES } from '@src/constants/messages';
 
 @Injectable()
 export class PropertyService {
   constructor(
     private readonly propertiesDatabaseService: PropertiesDatabaseService,
+    private readonly userDatabaseService: UsersDatabaseService,
     private readonly facebookService: FacebookClient,
-    //private readonly whatsApp: WhatsAppClient,
+    private readonly whatsApp: WhatsAppClient,
     private readonly configService: ConfigService,
-
-
   ) {}
 
   private handleException(e: any, message: string): void {
@@ -39,14 +39,15 @@ export class PropertyService {
     }
   }
 
-  async create(create: PropertyDto, user: UserResponseDto): Promise<PropertyDto> {
+  async create(create: PropertyDto, userRequest: UserResponseDto): Promise<PropertyDto> {
     try {
       await this.validatePropertyTitle(create.title);
-      const entity = PropertyEntity.fromDto(create, user.admin);
+      const user = await this.userDatabaseService.findOne(userRequest.id);
+      const entity = PropertyEntity.fromDto(create, user);
       const savedProperty = await this.propertiesDatabaseService.create(entity);
 
       if (savedProperty.approved) {
-        await firstValueFrom(this.facebookService.createPost(new CreatePost(savedProperty)));
+        await this.facebookService.createPost(new CreatePost(savedProperty));
       }
 
       return new PropertyDto(savedProperty);
@@ -68,20 +69,30 @@ export class PropertyService {
     }
   }
 
-  async home(): Promise<Home> {
+  async home(userRequest?: UserResponseDto): Promise<Home> {
     try {
-      const rent = await this.propertiesDatabaseService.findHome(PropertyStatus.ForRent);
-      const sale = await this.propertiesDatabaseService.findHome(PropertyStatus.ForSale);
-      const pined = await this.propertiesDatabaseService.findPinned();
+      // Ejecutar consultas en paralelo
+      const [rent, sale, pinned, user] = await Promise.all([
+        this.propertiesDatabaseService.findHome(PropertyStatus.ForRent),
+        this.propertiesDatabaseService.findHome(PropertyStatus.ForSale),
+        this.propertiesDatabaseService.findPinned(),
+        userRequest ? this.userDatabaseService.findOneEmail(userRequest.email, ['favoriteProperties', 'propertiesCreated']) : null,
+      ]);
 
-      if (!rent.length && !sale.length && !pined.length) {
-        throw new NotFoundException('Propiedades no encontradas');
+      if (userRequest && !user) {
+        throw new BadRequestException(MESSAGES.USER_NOT_FOUND);
+      }
+
+      if (!rent.length && !sale.length && !pinned.length) {
+        throw new NotFoundException('No se encontraron propiedades');
       }
 
       return {
-        rent: rent.map(property => new PropertyPlpDto(property)),
-        sale: sale.map(property => new PropertyPlpDto(property)),
-        pined: pined.map(property => new PropertyPlpDto(property)),
+        rent: rent.map(property => new PropertyDto(property)),
+        sale: sale.map(property => new PropertyDto(property)),
+        pinned: pinned.map(property => new PropertyDto(property)),
+        favourites: user ? user.favoriteProperties.map(property => new PropertyDto(property)) : [],
+        created: user ? user.propertiesCreated.map(property => new PropertyDto(property)) : [],
       };
     } catch (e) {
       this.handleException(e, 'Error al obtener el home');
@@ -95,7 +106,7 @@ export class PropertyService {
         throw new NotFoundException('Propiedad no encontrada');
       }
 
-      if (!user.admin && updateDto.approved !== undefined) {
+      if (!user.admin && updateDto?.approved !== undefined) {
         throw new UnauthorizedException('No tienes permisos para aprobar la propiedad');
       }
 
@@ -104,14 +115,15 @@ export class PropertyService {
       }
 
       const oldProperty = new PropertyDto(property);
-
       const updatedProperty = await this.propertiesDatabaseService.update(property, updateDto);
 
-      if(updatedProperty.approved){
-        await this.updatePostFacebook(updatedProperty, oldProperty);
-        await this.sendMessages(updatedProperty);
+      if (updatedProperty.approved) {
+        await Promise.all([
+          this.updatePostFacebook(updatedProperty, oldProperty),
+          this.sendMessages(updatedProperty)
+        ]);
       }
-      
+
       return new PropertyDto(updatedProperty);
     } catch (e) {
       this.handleException(e, 'Error al actualizar la propiedad');
@@ -126,7 +138,7 @@ export class PropertyService {
     return propertyType;
   }
 
-  async filterStatus(status: string, page: number): Promise<PropertyPlpDto[]> {
+  async filterStatus(status: string, page: number): Promise<PropertyDto[]> {
     try {
       const propertyType = this.validatePropertyStatus(status);
       const properties = await this.propertiesDatabaseService.filterByStatus(propertyType, page);
@@ -135,30 +147,67 @@ export class PropertyService {
         throw new NotFoundException('Propiedades no encontradas');
       }
 
-      return properties.map(property => new PropertyPlpDto(property));
+      return properties.map(property => new PropertyDto(property));
     } catch (e) {
       this.handleException(e, 'Error al filtrar las propiedades');
     }
   }
 
-  async findToApprove(): Promise<PropertyPlpDto[]> {
+  async findToApprove(): Promise<PropertyDto[]> {
     try {
       const properties = await this.propertiesDatabaseService.findToApprove();
       if (!properties.length) {
         throw new NotFoundException('Propiedades no encontradas');
       }
-      return properties.map(property => new PropertyPlpDto(property));
+      return properties.map(property => new PropertyDto(property));
     } catch (e) {
       this.handleException(e, 'Error al filtrar las propiedades');
+    }
+  }
+
+  async findAll(): Promise<PropertyDto[]> {
+    try {
+      const properties = await this.propertiesDatabaseService.findAll();
+      if (!properties.length) {
+        throw new NotFoundException('Propiedades no encontradas');
+      }
+      return properties.map((property: PropertyEntity) => new PropertyDto(property));
+    } catch (e) {
+      this.handleException(e, 'Error al obtener las propiedades');
+    }
+  }
+
+  async remove(id: string): Promise<void> {
+    try {
+      const idNumber = parseInt(id);
+      const property = await this.propertiesDatabaseService.findOne(idNumber);
+      if (!property) {
+        throw new NotFoundException('Propiedad no encontrada');
+      }
+      await this.propertiesDatabaseService.remove(idNumber);
+    } catch (e) {
+      this.handleException(e, 'Error al eliminar la propiedad');
+    }
+  }
+
+  async getCreatedProperties(user: UserResponseDto): Promise<PropertyDto[]> {
+    try {
+      const properties = await this.propertiesDatabaseService.findCreatedProperties(user.id);
+      if (!properties.length) {
+        throw new NotFoundException('Propiedades no encontradas');
+      }
+      return properties.map(property => new PropertyDto(property));
+    } catch (e) {
+      this.handleException(e, 'Error al obtener las propiedades');
     }
   }
 
   private async sendMessages(property: PropertyEntity): Promise<void> {
     const URL_INMO = this.configService.get<string>('URL_INMO');
     const propertie = await this.propertiesDatabaseService.findOne(property.id, ['users']);
-    const users = propertie.users;
+    const users = propertie.usersWithFavourite;
     users.forEach(user => {
-      // this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);
+      this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);
     });
   }
 
@@ -182,7 +231,6 @@ export class PropertyService {
       console.error('Error al renovar el Access Token:', error);
     }
   }
-  
 
   private async updatePostFacebook(updatedProperty: PropertyEntity, oldProperty: PropertyDto): Promise<void> {
     try {

@@ -3,6 +3,7 @@ import { UsersDatabaseService } from "@databaseUser/user.database.service";
 import { PropertiesDatabaseService } from "@databaseProperties/property.database.service";
 import { PropertyEntity } from "@databaseProperties/property.entity";
 import { FavoritesDatabaseService } from "@src/database/favorite/favorite.database.service";
+import { UserResponseDto } from "@src/user/dto/user.response.dto";
 
 @Injectable()
 export class FavoritesService {
@@ -20,33 +21,34 @@ export class FavoritesService {
     throw new HttpException(message, 500);
   }
 
-  async addFavorite(userId: number, propertyId: number): Promise<void> {
+  async addFavorite(userRequest: UserResponseDto, propertyId: number): Promise<PropertyEntity[]> {
     try {
-        const user = await this.usersDatabaseService.findOne(userId);
+        const user = await this.usersDatabaseService.findOne(userRequest.id);
 
-        if (!user) {
-        throw new NotFoundException('Usuario no encontrado');
+        if (!user || user.email !== userRequest.email) {
+          throw new NotFoundException('Usuario no encontrado');
         }
 
         const property = await this.propertiesDatabaseService.findOne(propertyId);
 
         if (!property) {
-        throw new Error('Propiedad no encontrada');
+          throw new Error('Propiedad no encontrada');
         }
 
         if (user.favoriteProperties.find((fav) => fav.id === propertyId)) {
             return;
         }
-        await this.favoritesDatabaseService.addFavoriteProperty(user, property);
+        const userUpdated = await this.favoritesDatabaseService.addFavoriteProperty(user, property);
+        return userUpdated?.favoriteProperties || [];
     } catch (e) {
         this.handleException(e, 'Error al añadir a favoritos');
     }
   }
 
-  async removeFavorite(userId: number, propertyId: number): Promise<PropertyEntity[]> {
-    const user = await this.usersDatabaseService.findOne(userId);
+  async removeFavorite(userRequest: UserResponseDto, propertyId: number): Promise<PropertyEntity[]> {
+    const user = await this.usersDatabaseService.findOne(userRequest.id);
 
-    if (!user) {
+    if (!user || user.email !== userRequest.email) {
       throw new Error('Usuario no encontrado');
     }
 
@@ -54,8 +56,13 @@ export class FavoritesService {
     return user.favoriteProperties || [];
   }
 
-  async getFavorites(userId: number): Promise<PropertyEntity[]> {
-    const favoriteProperties = await this.favoritesDatabaseService.getFavorites(userId);
+  async getFavorites(email: string): Promise<PropertyEntity[]> {
+    const user = await this.usersDatabaseService.findOneEmail(email);
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    const favoriteProperties = await this.favoritesDatabaseService.getFavorites(user.id);
 
     return favoriteProperties || [];
   }

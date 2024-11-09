@@ -1,29 +1,33 @@
-import { Controller, Post, Delete, Get, Param, Query } from '@nestjs/common';
+import { Controller, Post, Delete, Get, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { FavoritesService } from './favorites.service';
 import { PropertyEntity } from '@databaseProperties/property.entity';
+import { AuthGuard } from '@src/user/guards/session.guard';
+import { RequestWithUser } from '@src/user/interfaces/request.interface';
 
 @Controller('favorites')
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 
   @Post('add')
+  @UseGuards(AuthGuard)
   async addFavorite(
-    @Query('userId') userId: number,
+    @Req() request: RequestWithUser,
     @Query('propertyId') propertyId: number,
-  ): Promise<void> {
-    return await this.favoritesService.addFavorite(userId, propertyId);
+  ): Promise<PropertyEntity[]> {
+    return await this.favoritesService.addFavorite(request.user, propertyId);
   }
 
   @Delete('delete')
   async removeFavorite(
-    @Query('userId') userId: number,
+    @Req() request: RequestWithUser,
     @Query('propertyId') propertyId: number,
   ): Promise<PropertyEntity[]> {
-    return await this.favoritesService.removeFavorite(+userId, +propertyId);
+    return await this.favoritesService.removeFavorite(request.user, +propertyId);
   }
 
   @Get('get')
-  async getFavorites(@Query('userId') userId: number): Promise<PropertyEntity[]> {
-    return await this.favoritesService.getFavorites(userId);
+  @UseGuards(AuthGuard)
+  async getFavorites(@Req() request: RequestWithUser): Promise<PropertyEntity[]> {
+    return await this.favoritesService.getFavorites(request.user.email);
   }
 }

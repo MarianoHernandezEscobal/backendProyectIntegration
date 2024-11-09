@@ -1,9 +1,9 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, forwardRef } from '@nestjs/common';
 import { GeoCoordinatesDto } from '@src/property/dto/geoCoordinates.dto';
 import { PropertyDto } from '@src/property/dto/property.dto';
 import { PropertyStatus } from '@src/enums/status.enum';
 import { PropertyTypes } from '@src/enums/types.enum';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToMany, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToMany, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { RentEntity } from '../rents/rents.entity';
 
@@ -17,6 +17,9 @@ export class PropertyEntity {
     
     @Column()
     description: string;
+    
+    @Column()
+    longDescription: string;
 
     @Column()
     price: number;
@@ -27,16 +30,16 @@ export class PropertyEntity {
       })
     type: PropertyTypes;
     
-    @Column()
-    m2: number;
-
     @Column({
         type: 'simple-array',
     })
     status: PropertyStatus[];
 
     @Column()
-    m2Construction: number;
+    lotSize: number;
+
+    @Column()
+    area: number;
 
     @Column()
     rooms: number;
@@ -54,13 +57,13 @@ export class PropertyEntity {
     neighborhood: string;
 
     @Column()
-    city: string;
+    yearBuilt: string;
 
     @Column()
-    year: string;
+    garage: boolean;
 
     @Column({ type: 'simple-array' })
-    image: string[];
+    imageSrc: string[];
 
     @Column()
     contribution: string;
@@ -74,13 +77,17 @@ export class PropertyEntity {
     @CreateDateColumn()
     createdAt: Date;
 
-    @ManyToMany(() => UserEntity, (user) => user.favoriteProperties)
-    users: UserEntity[];
+    @ManyToMany('UserEntity', 'favoriteProperties')
+    usersWithFavourite: UserEntity[];
+    
+    @ManyToOne('UserEntity', 'propertiesCreated')
+    @JoinColumn({ name: 'createdBy' })
+    createdBy: UserEntity;
 
     @OneToMany('RentEntity', 'property')
     rents: RentEntity[];
 
-    static fromDto(property: PropertyDto, approved: boolean): PropertyEntity {
+    static fromDto(property: PropertyDto, user: UserEntity): PropertyEntity {
         const entity = new PropertyEntity();
         entity.title = property.title;
         entity.description = property.description;
@@ -101,19 +108,22 @@ export class PropertyEntity {
         }
 
         entity.status = property.status;
-        entity.m2 = property.m2;
-        entity.m2Construction = property.m2Construction;
+        entity.lotSize = property.lotSize;
+        entity.area = property.area;
         entity.rooms = property.rooms;
         entity.bathrooms = property.bathrooms;
         entity.address = property.address;
         entity.geoCoordinates = property.geoCoordinates;
         entity.neighborhood = property.neighborhood;
-        entity.city = property.city;
-        entity.year = property.year;
-        entity.image = property.image;
+        entity.yearBuilt = property.yearBuilt;
+        entity.imageSrc = property.imageSrc;
+        entity.longDescription = property.longDescription;
+        entity.garage = property.garage;
         entity.contribution = property.contribution;
         entity.pinned = false;
-        entity.approved = approved;
+        entity.approved = user.admin;
+        entity.createdBy = user;
         return entity;
     }
 }
+

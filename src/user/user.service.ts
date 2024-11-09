@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, HttpException } from '@nestjs/common';
+import { Injectable, BadRequestException, HttpException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './dto/user.dto';
@@ -16,23 +16,22 @@ export class UserService {
     private readonly usersDatabaseService: UsersDatabaseService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-
   ) {}
 
   status(): string {
     return 'ok';
   }
 
-  private async findUserByEmailOrThrow(email: string): Promise<UserEntity> {
-    const user = await this.usersDatabaseService.findOneEmail(email);
+  private async findUserByEmailOrThrow(email: string, relations?: string[]): Promise<UserEntity> {
+    const user = await this.usersDatabaseService.findOneEmail(email, relations);
     if (!user) {
-      throw new BadRequestException(MESSAGES.USER_NOT_FOUND);
+      throw new NotFoundException(MESSAGES.USER_NOT_FOUND);
     }
     return user;
   }
 
   private handleException(error: any, defaultMessage: string): void {
-    if (error instanceof BadRequestException) {
+    if (error instanceof BadRequestException || error instanceof NotFoundException) {
       throw error;
     }
     console.error(error);
@@ -63,7 +62,6 @@ export class UserService {
       if (!isPasswordValid) {
         throw new BadRequestException('Contraseña incorrecta');
       }
-      delete existingUser.password;
       const jwt = await this.generateJwt(existingUser);
       return { access_token: jwt };
     } catch (e) {
@@ -84,7 +82,6 @@ export class UserService {
     try {
       const user = await this.findUserByEmailOrThrow(email);
       await this.usersDatabaseService.makeAdmin(user);
-
       return new UserResponseDto(user);
     } catch (e) {
       this.handleException(e, 'Error al hacer administrador al usuario');
@@ -95,7 +92,9 @@ export class UserService {
     try {
       const user = await this.findUserByEmailOrThrow(email);
       update.phone = User.formatPhoneNumber(update.phone);
-      update.password = await this.hashPassword(update.password);
+      if (update.password) {
+        update.password = await this.hashPassword(update.password);
+      }
       const updatedUser = await this.usersDatabaseService.update(user, update);
       return new UserResponseDto(updatedUser);
     } catch (e) {
@@ -103,14 +102,43 @@ export class UserService {
     }
   }
 
-  private async generateJwt(user: UserResponseDto): Promise<string> {
-    const payload = { user };
-    const token = await this.jwtService.signAsync(payload);
-    return `Bearer ${token}`;
+  async changePassword(email: string, currentPassword: string, newPassword: string): Promise<void> {
+    try {
+      const user = await this.findUserByEmailOrThrow(email);
+
+      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isPasswordValid) {
+        throw new BadRequestException('Contraseña actual incorrecta');
+      }
+
+      const hashedPassword = await this.hashPassword(newPassword);
+
+      const updatedUser: User = {
+        ...user,
+        password: hashedPassword,
+      };
+      await this.usersDatabaseService.update(user, updatedUser);
+    } catch (e) {
+      this.handleException(e, 'Error al cambiar la contraseña');
+    }
+  }
+
+  async delete(email: string, userEmail: string): Promise<void> {
+    try {
+      const emailToDelete = email || userEmail;
+      const user = await this.findUserByEmailOrThrow(emailToDelete);
+      await this.usersDatabaseService.remove(user.id);
+    } catch (e) {
+      this.handleException(e, 'Error al eliminar el usuario');
+    }
+  }
+
+  private async generateJwt(user: UserEntity): Promise<string> {
+    const payload = { userId: user.id, email: user.email };
+    return this.jwtService.signAsync(payload);
   }
 
   private async hashPassword(password: string): Promise<string> {
-
     const saltRounds = +this.configService.get<string>('SALT') || 10;
     return bcrypt.hash(password, saltRounds);
   }

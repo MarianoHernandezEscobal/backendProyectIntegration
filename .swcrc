@@ -18,6 +18,7 @@
         "@user/*": ["src/user/*"],
         "@clients/*": ["src/clients/*"],
         "@database/*": ["src/database/*"],
+        "@enums/*": ["src/enums/*"],
 
       },
       "target": "es2022"

@@ -1,5 +1,7 @@
 import { IsDate } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { UserEntity } from '@database/user/user.entity';
+import { PropertyEntity } from '@database/property/property.entity';
 
 
 export class RentDTO {
@@ -21,6 +23,6 @@ export class RentDTO {
     @IsDate()
     dateEnd: Date;
 
-    user: number;
-    property: number;
+    user: UserEntity;
+    property: PropertyEntity;
 }

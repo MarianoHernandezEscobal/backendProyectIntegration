@@ -28,6 +28,6 @@ export class FavoritesDatabaseService {
       relations: ['favoriteProperties'],
     });
 
-    return user.favoriteProperties || [];
+    return user?.favoriteProperties || [];
   }
 }

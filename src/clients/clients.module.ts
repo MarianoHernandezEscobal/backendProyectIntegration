@@ -11,7 +11,7 @@ import { WhatsAppClient } from './whatsapp/whatsapp.client';
         maxRedirects: 5
     })
 ],
-  providers: [FacebookClient, ],//WhatsAppClient
-  exports: [FacebookClient, ],//WhatsAppClient
+  providers: [FacebookClient, WhatsAppClient ],//
+  exports: [FacebookClient, WhatsAppClient ],//WhatsAppClient
 })
 export class ClientsModule {}

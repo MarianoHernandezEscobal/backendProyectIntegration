@@ -1,11 +1,11 @@
 import { BadRequestException, Body, Controller, Get, HttpException, NotFoundException, Post, Query, Req, UnauthorizedException, UseGuards, } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { PropertyDto } from './dto/property.dto';
-import { PropertyPlpDto } from './dto/property.plp.dto';
 import { Home } from './dto/home.response.dto';
 import { AuthGuard } from '@src/user/guards/session.guard';
 import { RequestWithUser } from '@user/interfaces/request.interface';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { TokenGuard } from './guards/token.guard';
 
 @ApiTags('Properties')
 @Controller('property')
@@ -57,37 +57,60 @@ export class PropertyController {
   
 
   @Get('home')
+  @UseGuards(TokenGuard)
   @ApiOperation({ summary: 'Obtener las propiedades para el home' })
   @ApiResponse({ status: 200, description: 'Propiedades obtenidas correctamente', type: Home })
   @ApiResponse({ status: 404, description: 'Propiedades no encontradas', type: NotFoundException })
   @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
-  async home(): Promise<Home> {
-    return await this.propertyService.home();
+  async home(@Req() request: RequestWithUser): Promise<Home> {
+    return await this.propertyService.home(request.user);
   }
 
   @Get('filterStatus')
   @ApiOperation({ summary: 'Filtrar propiedades por estado' })
   @ApiQuery({ name: 'status', type: 'string', description: 'El estado de la propiedad (ForRent, ForSale, etc.)' })
   @ApiQuery({ name: 'page', type: 'number', description: 'Número de página para la paginación' })
-  @ApiResponse({ status: 200, description: 'Propiedades filtradas correctamente', type: [PropertyPlpDto] })
+  @ApiResponse({ status: 200, description: 'Propiedades filtradas correctamente', type: [PropertyDto] })
   @ApiResponse({ status: 400, description: 'Tipo de propiedad inválido', type: BadRequestException })
   @ApiResponse({ status: 404, description: 'Propiedades no encontradas', type: NotFoundException })
   @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
   async filterStatus(
     @Query('status') status: string,
     @Query('page') page: number
-  ): Promise<PropertyPlpDto[]> {
+  ): Promise<PropertyDto[]> {
     return await this.propertyService.filterStatus(status, page);
   }
 
   @Get('findToApproved')
   @ApiOperation({ summary: 'Obtener propiedades pendientes de aprobación' })
-  @ApiResponse({ status: 200, description: 'Propiedades encontradas para aprobar', type: [PropertyPlpDto] })
+  @ApiResponse({ status: 200, description: 'Propiedades encontradas para aprobar', type: [PropertyDto] })
   @ApiResponse({ status: 404, description: 'No se encontraron propiedades para aprobar', type: NotFoundException })
   @ApiResponse({ status: 500, description: 'Error interno del servidor',  type: HttpException })
   async filterToApproved(
-  ): Promise<PropertyPlpDto[]> {
+  ): Promise<PropertyDto[]> {
     return await this.propertyService.findToApprove();
+  }
+
+  @Get('findAll')
+  @ApiOperation({ summary: 'Obtener todas las propiedades' })
+  @ApiResponse({ status: 200, description: 'Propiedades encontradas', type: [PropertyDto] })
+  @ApiResponse({ status: 404, description: 'No se encontraron propiedades', type: NotFoundException })
+  @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
+  async findAll(): Promise<PropertyDto[]> {
+    return await this.propertyService.findAll();
+  }
+
+  @Get('createdProperties')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Obtener propiedades creadas por el usuario' })
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Propiedades encontradas', type: [PropertyDto] })
+  @ApiResponse({ status: 404, description: 'No se encontraron propiedades', type: NotFoundException })
+  @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
+  async createdProperties(
+    @Req() request: RequestWithUser
+  ): Promise<PropertyDto[]> {
+    return await this.propertyService.getCreatedProperties(request.user);
   }
 
   @Get('testTokens')

@@ -3,12 +3,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PropertyEntity } from '@databaseProperties/property.entity';
 import { UserEntity } from '@databaseUser/user.entity';
 import { FavoritesController } from './favorite.controller';
-import { DatabaseModule } from '@src/database/database.module';
+import { DatabaseModule } from '@database/database.module';
 import { FavoritesService } from './favorites.service';
+import { UserModule } from '@user/user.module';
 
 
 @Module({
   imports: [
+    UserModule,
     DatabaseModule,
     TypeOrmModule.forFeature([UserEntity, PropertyEntity]),
   ],
@@ -16,16 +18,3 @@ import { FavoritesService } from './favorites.service';
   controllers: [FavoritesController],
 })
 export class FavoritesModule {}
-
-
-// import { Module } from '@nestjs/common';
-// import { PropertyController } from './property.controller';
-// import { PropertyService } from './property.service';
-// import { DatabaseModule } from '@src/database/database.module';
-
-// @Module({
-//   imports: [DatabaseModule],
-//   controllers: [PropertyController],
-//   providers: [PropertyService],
-// })
-// export class PropertyModule {}

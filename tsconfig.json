@@ -29,6 +29,9 @@
       "@user/*": ["src/user/*"],
       "@clients/*": ["src/clients/*"],
       "@constants/*": ["src/constants/*"],
+      "@database/*": ["src/database/*"],
+      "@enums/*": ["src/enums/*"],
+      "@rent/*": ["src/rent/*"],
 
     },
   },

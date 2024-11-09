@@ -31,13 +31,13 @@ export class RentService {
         throw new BadRequestException('Seleccione correctamente las fechas');
       }
 
-        const user = await this.usersDatabaseService.findOne(rent.user);
+        const user = await this.usersDatabaseService.findOne(rent.user.id);
 
         if (!user) {
           throw new NotFoundException(MESSAGES.USER_NOT_FOUND);
         }
 
-        const property = await this.propertiesDatabaseService.findOneByStatus(rent.property, PropertyStatus.ForRent);
+        const property = await this.propertiesDatabaseService.findOneByStatus(rent.property.id, PropertyStatus.ForRent);
 
         if (!property) {
           throw new NotFoundException(MESSAGES.PROPERTY_NOT_FOUND);

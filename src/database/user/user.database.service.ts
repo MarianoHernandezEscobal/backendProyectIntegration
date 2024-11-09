@@ -27,12 +27,13 @@ export class UsersDatabaseService {
     });
   }
 
-  findOneEmail(email: string): Promise<UserEntity | null> {
+  findOneEmail(email: string, relations?: string[]): Promise<UserEntity | null> {
     return this.usersRepository.findOne({
       where: {
           email,
       },
-  })
+      relations: relations,
+    });
   }
 
   async remove(id: number): Promise<void> {
