@@ -21,6 +21,7 @@ export class TokenGuard implements CanActivate {
             throw new UnauthorizedException('Invalid or expired access token');
         }    
     }
+    return true;
   }
 
   private extractTokenFromHeader(request: any): string | null {

@@ -23,7 +23,7 @@ export class PropertyService {
     private readonly propertiesDatabaseService: PropertiesDatabaseService,
     private readonly userDatabaseService: UsersDatabaseService,
     private readonly facebookService: FacebookClient,
-    private readonly whatsApp: WhatsAppClient,
+    //private readonly whatsApp: WhatsAppClient,
     private readonly configService: ConfigService,
   ) {}
 
@@ -215,7 +215,7 @@ export class PropertyService {
     const propertie = await this.propertiesDatabaseService.findOne(property.id, ['users']);
     const users = propertie.usersWithFavourite;
     users.forEach(user => {
-      this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);
+      //this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);
     });
   }
 
