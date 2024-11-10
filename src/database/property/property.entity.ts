@@ -57,7 +57,7 @@ export class PropertyEntity {
     neighborhood: string;
 
     @Column()
-    yearBuilt: string;
+    yearBuilt: number;
 
     @Column()
     garage: boolean;

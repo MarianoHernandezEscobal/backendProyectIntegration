@@ -6,6 +6,7 @@ import { IsArray, IsEnum, IsNumber, IsString, IsBoolean, IsDate, IsOptional, IsO
 import { ApiProperty } from "@nestjs/swagger";
 import { User } from "@user/dto/user.dto";
 import { RentDTO } from "@rent/dto/rent.dto";
+import { UserResponseDto } from "@user/dto/user.response.dto";
 
 export class PropertyDto {
 
@@ -67,7 +68,7 @@ export class PropertyDto {
 
     @ApiProperty({ description: 'Año de construcción de la propiedad' })
     @IsString()
-    yearBuilt: string;
+    yearBuilt: number;
 
     @ApiProperty({ description: 'Tiene garage' })
     @IsNumber()
@@ -103,7 +104,7 @@ export class PropertyDto {
     @ApiProperty({ description: 'Fecha de creación de la propiedad' })
     @IsOptional()
     @IsObject()
-    createdBy: User;
+    createdBy: UserResponseDto;
 
     @ApiProperty({ description: 'Fecha de creación de la propiedad' })
     @IsOptional()
@@ -133,7 +134,7 @@ export class PropertyDto {
         this.approved = property.approved;
         this.createdAt = property.createdAt;
         this.usersWithFavourite = property?.usersWithFavourite;
-        this.createdBy = property?.createdBy || null;
+        this.createdBy = property?.createdBy ? new UserResponseDto(property?.createdBy) : null;
         this.rents = property?.rents || [];
     }
 }

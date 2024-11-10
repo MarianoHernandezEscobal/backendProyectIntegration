@@ -56,7 +56,7 @@ export class PropertyController {
             geoCoordinates: { lat: 34.052235, lng: -118.243683 },
             neighborhood: "Beverly Hills",
             city: "Los Angeles",
-            yearBuilt: "2018",
+            yearBuilt: 2018,
             garage: true,
             imageSrc: [
               "https://example.com/images/villa_front.jpg",

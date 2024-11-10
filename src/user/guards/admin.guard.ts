@@ -18,7 +18,7 @@ export class RoleGuard implements CanActivate {
 
     try {
       const decoded = this.jwtService.verify(token);
-      if (!decoded?.user?.admin) {
+      if (!decoded?.admin) {
         throw new ForbiddenException('No tienes los permisos necesarios para acceder a este recurso');
       }
       return true;
