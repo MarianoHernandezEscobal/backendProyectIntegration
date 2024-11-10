@@ -4,9 +4,11 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { DatabaseModule } from '@src/database/database.module';
 import { ConfigService } from '@nestjs/config';
+import { FastifyMulterModule } from '@nest-lab/fastify-multer';
 
 @Module({
   imports: [
+    FastifyMulterModule,
     DatabaseModule,
     JwtModule.registerAsync({
       inject: [ConfigService],

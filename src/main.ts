@@ -11,10 +11,8 @@ async function bootstrap() {
     new FastifyAdapter(),
   );
 
-  // Obtiene ConfigService desde la instancia de la aplicación
   const configService = app.get(ConfigService);
 
-  // Configuración de CORS usando ConfigService
   app.enableCors({
     origin: configService.get<string>('CORS_ORIGIN'),
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -30,7 +28,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api', app, document);
 
-  // Usa ConfigService para obtener el puerto y el entorno
   const port = configService.get<number>('PORT') || 3000;
   const env = configService.get<string>('NODE_ENV') || 'development';
 

@@ -1,11 +1,26 @@
-import { BadRequestException, Body, Controller, Get, HttpException, NotFoundException, Post, Query, Req, UnauthorizedException, UseGuards, } from '@nestjs/common';
+import { 
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  NotFoundException,
+  Post,
+  Query,
+  Req,
+  UnauthorizedException,
+  UploadedFiles,
+  UseGuards, 
+  UseInterceptors} from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { PropertyDto } from './dto/property.dto';
 import { Home } from './dto/home.response.dto';
 import { AuthGuard } from '@src/user/guards/session.guard';
 import { RequestWithUser } from '@user/interfaces/request.interface';
-import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
 import { TokenGuard } from './guards/token.guard';
+import { FilesInterceptor, File } from '@nest-lab/fastify-multer';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Properties')
 @Controller('property')
@@ -14,18 +29,68 @@ export class PropertyController {
 
   @Post('create')
   @UseGuards(AuthGuard)
+  @UseInterceptors(FilesInterceptor("files", 4))
   @ApiOperation({ summary: 'Crear una nueva propiedad' })
   @ApiBearerAuth()
-  @ApiBody({ description: 'Datos de la nueva propiedad', type: PropertyDto })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Datos de la nueva propiedad',
+    schema: {
+      type: 'object',
+      properties: {
+        property: {
+          type: 'string',
+          description: 'Datos de la propiedad en formato JSON',
+          example: JSON.stringify({
+            title: "Casa moderna con piscina",
+            description: "Una casa moderna con piscina y jardín amplio, ubicada en una zona residencial tranquila.",
+            longDescription: "Esta es una descripción larga de la propiedad, proporcionando más detalles y características.",
+            price: 4500,
+            type: "house",
+            status: ["for_rent"],
+            lotSize: 200,
+            area: 180,
+            rooms: 4,
+            bathrooms: 3,
+            address: "5678 Oak Avenue",
+            geoCoordinates: { lat: 34.052235, lng: -118.243683 },
+            neighborhood: "Beverly Hills",
+            city: "Los Angeles",
+            yearBuilt: "2018",
+            garage: true,
+            imageSrc: [
+              "https://example.com/images/villa_front.jpg",
+              "https://example.com/images/villa_pool.jpg",
+              "https://example.com/images/villa_garden.jpg"
+            ],
+            contribution: "2000 USD",
+            pinned: false
+          })
+        },
+        files: {
+          type: 'array',
+          items: {
+            type: 'string',
+            format: 'binary'
+          },
+          description: 'Archivos de imágenes de la propiedad'
+        }
+      }
+    }
+  })
   @ApiResponse({ status: 201, description: 'Propiedad creada exitosamente', type: PropertyDto })
-  @ApiResponse({ status: 400, description: 'Propiedad ya existente o datos inválidos' })
+  @ApiResponse({ status: 400, description: 'Ya existe una propiedad con ese título' })
+  @ApiResponse({ status: 401, description: 'No autorizado (Token faltante o inválido)', type: UnauthorizedException })
   @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
   async create(
-    @Body('property') property: PropertyDto,
+    @Body('property') property: string,
+    @UploadedFiles() files: Array<File>,
     @Req() request: RequestWithUser
   ): Promise<PropertyDto> {
-    return await this.propertyService.create(property, request.user);
+    const propertyDto: PropertyDto = JSON.parse(property);
+    return await this.propertyService.create(propertyDto, request.user, files);
   }
+
 
   @Post('update')
   @UseGuards(AuthGuard)

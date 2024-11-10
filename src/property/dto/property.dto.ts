@@ -20,7 +20,7 @@ export class PropertyDto {
     @IsString()
     description: string;
 
-    @ApiProperty({ description: 'Descripción de la propiedad' })
+    @ApiProperty({ description: 'Descripción de la larga de la propiedad' })
     @IsString()
     longDescription: string;
 

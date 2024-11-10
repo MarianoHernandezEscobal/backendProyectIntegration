@@ -28,6 +28,6 @@ export class FavoritesController {
   @Get('get')
   @UseGuards(AuthGuard)
   async getFavorites(@Req() request: RequestWithUser): Promise<PropertyEntity[]> {
-    return await this.favoritesService.getFavorites(request.user.email);
+    return await this.favoritesService.getFavorites(request.user);
   }
 }

@@ -134,8 +134,9 @@ export class UserService {
   }
 
   private async generateJwt(user: UserEntity): Promise<string> {
-    const payload = { userId: user.id, email: user.email };
-    return this.jwtService.signAsync(payload);
+    const payload = { id: user.id, email: user.email };
+    const token = await this.jwtService.signAsync(payload);
+    return `Bearer ${token}`;
   }
 
   private async hashPassword(password: string): Promise<string> {

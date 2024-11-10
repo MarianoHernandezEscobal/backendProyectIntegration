@@ -20,10 +20,10 @@ export class UsersDatabaseService {
     return this.usersRepository.find();
   }
 
-  findOne(id: number): Promise<UserEntity | null> {
+  findOne(id: number, relations?: string[]): Promise<UserEntity | null> {
     return this.usersRepository.findOne({
       where: { id },
-      relations: ['favoriteProperties'],
+      relations,
     });
   }
 

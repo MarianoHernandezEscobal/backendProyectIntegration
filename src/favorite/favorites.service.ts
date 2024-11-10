@@ -23,7 +23,7 @@ export class FavoritesService {
 
   async addFavorite(userRequest: UserResponseDto, propertyId: number): Promise<PropertyEntity[]> {
     try {
-        const user = await this.usersDatabaseService.findOne(userRequest.id);
+        const user = await this.usersDatabaseService.findOne(userRequest.id, ['favoriteProperties']);
 
         if (!user || user.email !== userRequest.email) {
           throw new NotFoundException('Usuario no encontrado');
@@ -46,7 +46,7 @@ export class FavoritesService {
   }
 
   async removeFavorite(userRequest: UserResponseDto, propertyId: number): Promise<PropertyEntity[]> {
-    const user = await this.usersDatabaseService.findOne(userRequest.id);
+    const user = await this.usersDatabaseService.findOne(userRequest.id, ['favoriteProperties']);
 
     if (!user || user.email !== userRequest.email) {
       throw new Error('Usuario no encontrado');
@@ -56,12 +56,7 @@ export class FavoritesService {
     return user.favoriteProperties || [];
   }
 
-  async getFavorites(email: string): Promise<PropertyEntity[]> {
-    const user = await this.usersDatabaseService.findOneEmail(email);
-
-    if (!user) {
-      throw new NotFoundException('Usuario no encontrado');
-    }
+  async getFavorites(user: UserResponseDto): Promise<PropertyEntity[]> {
     const favoriteProperties = await this.favoritesDatabaseService.getFavorites(user.id);
 
     return favoriteProperties || [];

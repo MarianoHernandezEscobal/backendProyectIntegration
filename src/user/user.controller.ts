@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Put, Body, Query, Req, UseGuards, Delete } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody, ApiQuery } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { User } from '@user/dto/user.dto';
 import { AuthenticationResponseDto } from './dto/authentication.response.dto';
@@ -8,6 +7,7 @@ import { UserResponseDto } from './dto/user.response.dto';
 import { AuthGuard } from './guards/session.guard';
 import { RequestWithUser } from './interfaces/request.interface';
 import { RoleGuard } from './guards/admin.guard';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('User')
 @Controller('user')

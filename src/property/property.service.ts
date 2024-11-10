@@ -13,10 +13,13 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { UsersDatabaseService } from '@databaseUser/user.database.service';
 import { MESSAGES } from '@src/constants/messages';
+import { S3Service } from '@src/s3/s3.service';
+import { File } from '@nest-lab/fastify-multer';
 
 @Injectable()
 export class PropertyService {
   constructor(
+    private readonly s3Service: S3Service,
     private readonly propertiesDatabaseService: PropertiesDatabaseService,
     private readonly userDatabaseService: UsersDatabaseService,
     private readonly facebookService: FacebookClient,
@@ -39,11 +42,16 @@ export class PropertyService {
     }
   }
 
-  async create(create: PropertyDto, userRequest: UserResponseDto): Promise<PropertyDto> {
+  async create(create: PropertyDto, userRequest: UserResponseDto, images: Array<File>): Promise<PropertyDto> {
     try {
       await this.validatePropertyTitle(create.title);
       const user = await this.userDatabaseService.findOne(userRequest.id);
+     
       const entity = PropertyEntity.fromDto(create, user);
+      const imageUrls = await Promise.all(
+        images.map(file => this.s3Service.uploadFile(file.buffer, file.originalname))
+      );
+      entity.imageSrc = imageUrls;
       const savedProperty = await this.propertiesDatabaseService.create(entity);
 
       if (savedProperty.approved) {
