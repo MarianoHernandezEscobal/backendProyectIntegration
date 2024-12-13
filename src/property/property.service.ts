@@ -64,6 +64,14 @@ export class PropertyService {
     }
   }
 
+  async getTermsAndConditions(): Promise<string> {
+    try {
+      return this.configService.get<string>('TERMS_AND_CONDITIONS');
+    } catch (e) {
+      this.handleException(e, 'Error al obtener los términos y condiciones');
+    }
+  }
+
   async findOne(id: string): Promise<PropertyDto> {
     try {
       const idNumber = parseInt(id);

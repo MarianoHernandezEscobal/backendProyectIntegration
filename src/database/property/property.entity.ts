@@ -99,7 +99,8 @@ export class PropertyEntity {
         entity.type = propertyType;
 
         if (property.status) {
-            property.status.forEach((status) => {
+            console.log(property.status);
+            property?.status?.forEach((status) => {
                 const propertyStatus = Object.values(PropertyStatus).find((type) => type === status);
                 if (!propertyStatus) {
                     throw new BadRequestException(`Invalid property status: ${status}`);

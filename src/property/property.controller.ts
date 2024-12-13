@@ -91,6 +91,15 @@ export class PropertyController {
     return await this.propertyService.create(propertyDto, request.user, files);
   }
 
+  @Get('terms')
+  @ApiOperation({ summary: 'Obtener los términos y condiciones' })
+  @ApiResponse({ status: 200, description: 'Términos y condiciones obtenidos correctamente', type: String })
+  @ApiResponse({ status: 404, description: 'No se encontraron términos y condiciones', type: NotFoundException })
+  @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
+  async termsAndConditions(): Promise<string> {
+    return await this.propertyService.getTermsAndConditions();
+  }
+
 
   @Post('update')
   @UseGuards(AuthGuard)
