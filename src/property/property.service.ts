@@ -107,9 +107,12 @@ export class PropertyService {
     }
   }
 
-  async update(updateDto: PropertyDto, user: UserResponseDto): Promise<PropertyDto> {
+  async update(updateDto: PropertyDto, user: UserResponseDto, images: Array<File>): Promise<PropertyDto> {
     try {
-      const property = await this.propertiesDatabaseService.findOne(updateDto.id);
+      const property = await this.propertiesDatabaseService.findOne(
+        updateDto.id,
+        ['usersWithFavourite', 'createdBy', 'rents']
+      );
       if (!property) {
         throw new NotFoundException('Propiedad no encontrada');
       }
@@ -212,7 +215,7 @@ export class PropertyService {
 
   private async sendMessages(property: PropertyEntity): Promise<void> {
     const URL_INMO = this.configService.get<string>('URL_INMO');
-    const propertie = await this.propertiesDatabaseService.findOne(property.id, ['users']);
+    const propertie = await this.propertiesDatabaseService.findOne(property.id, ['usersWithFavourite']);
     const users = propertie.usersWithFavourite;
     users.forEach(user => {
       //this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);

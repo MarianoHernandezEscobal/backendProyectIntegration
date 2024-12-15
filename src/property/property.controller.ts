@@ -94,6 +94,7 @@ export class PropertyController {
 
   @Post('update')
   @UseGuards(AuthGuard)
+  @UseInterceptors(FilesInterceptor("files", 4))
   @ApiOperation({ summary: 'Actualizar una propiedad existente' })
   @ApiBearerAuth()
   @ApiBody({ description: 'Datos de la propiedad para actualizar', type: PropertyDto })
@@ -102,10 +103,12 @@ export class PropertyController {
   @ApiResponse({ status: 404, description: 'Propiedad no encontrada', type: NotFoundException })
   @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
   async update(
-    @Body('property') property: PropertyDto,
+    @Body('property') property: string,
+    @UploadedFiles() files: Array<File>,
     @Req() request: RequestWithUser
   ): Promise<PropertyDto> {
-    return await this.propertyService.update(property, request.user);
+    const propertyDto: PropertyDto = JSON.parse(property);
+    return await this.propertyService.update(propertyDto, request.user, files);
   }
 
     @Get('findOne')

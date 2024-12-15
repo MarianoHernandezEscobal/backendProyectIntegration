@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, HttpException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, HttpException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './dto/user.dto';
@@ -31,7 +31,7 @@ export class UserService {
   }
 
   private handleException(error: any, defaultMessage: string): void {
-    if (error instanceof BadRequestException || error instanceof NotFoundException) {
+    if (error instanceof BadRequestException || error instanceof NotFoundException || error instanceof UnauthorizedException) {
       throw error;
     }
     console.error(error);
@@ -65,7 +65,7 @@ export class UserService {
       const jwt = await this.generateJwt(existingUser);
       return { access_token: jwt };
     } catch (e) {
-      this.handleException(e, 'Error al iniciar sesión');
+      this.handleException(new UnauthorizedException(), 'Error al iniciar sesión');
     }
   }
 
@@ -134,7 +134,7 @@ export class UserService {
   }
 
   private async generateJwt(user: UserEntity): Promise<string> {
-    const payload = { id: user.id, email: user.email };
+    const payload = { id: user.id, email: user.email, admin: user.admin };
     const token = await this.jwtService.signAsync(payload);
     return `Bearer ${token}`;
   }

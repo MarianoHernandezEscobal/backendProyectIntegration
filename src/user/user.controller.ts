@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Query, Req, UseGuards, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Query, Req, UseGuards, Delete, UsePipes, ValidationPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '@user/dto/user.dto';
 import { AuthenticationResponseDto } from './dto/authentication.response.dto';
@@ -22,6 +22,7 @@ export class UserController {
   }
 
   @Post('create')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: 'Create a new user' })
   @ApiBody({ type: User })
   @ApiResponse({ status: 201, description: 'User created', type: AuthenticationResponseDto })
@@ -31,6 +32,7 @@ export class UserController {
   }
 
   @Post('login')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   @ApiOperation({ summary: 'Login a user' })
   @ApiBody({ type: AuthenticationRequestDto })
   @ApiResponse({ status: 200, description: 'Login successful', type: AuthenticationResponseDto })

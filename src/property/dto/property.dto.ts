@@ -67,15 +67,14 @@ export class PropertyDto {
     neighborhood: string;
 
     @ApiProperty({ description: 'Año de construcción de la propiedad' })
-    @IsString()
+    @IsNumber()
     yearBuilt: number;
 
     @ApiProperty({ description: 'Tiene garage' })
-    @IsNumber()
+    @IsBoolean()
     garage: boolean;
 
     @ApiProperty({ description: 'Imágenes de la propiedad', isArray: true })
-    @IsOptional()
     @IsArray()
     @IsString({ each: true })
     imageSrc: string[];
@@ -85,15 +84,18 @@ export class PropertyDto {
     contribution: string;
 
     @ApiProperty({ description: 'Propiedad pineada', default: false })
+    @IsOptional()
     @IsBoolean()
     pinned: boolean;
 
     @ApiProperty({ description: 'Propiedad aprobada', default: false })
+    @IsOptional()
     @IsBoolean()
     approved: boolean;
 
     @ApiProperty({ description: 'Fecha de creación de la propiedad' })
     @IsDate()
+    @IsOptional()
     createdAt: Date;
 
     @ApiProperty({ description: 'Fecha de creación de la propiedad' })
