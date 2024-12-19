@@ -15,21 +15,24 @@ import {
 import { PropertyService } from './property.service';
 import { PropertyDto } from './dto/property.dto';
 import { Home } from './dto/home.response.dto';
-import { AuthGuard } from '@src/user/guards/session.guard';
+import { AuthGuard } from '@user/guards/session.guard';
 import { RequestWithUser } from '@user/interfaces/request.interface';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
 import { TokenGuard } from './guards/token.guard';
 import { FilesInterceptor, File } from '@nest-lab/fastify-multer';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
+
+
 
 @ApiTags('Properties')
 @Controller('property')
 export class PropertyController {
-  constructor(private readonly propertyService: PropertyService) {}
+  constructor(
+    private readonly propertyService: PropertyService,
+  ) {}
 
   @Post('create')
   @UseGuards(AuthGuard)
-  @UseInterceptors(FilesInterceptor("files", 4))
+  @UseInterceptors(FilesInterceptor("files", 25))
   @ApiOperation({ summary: 'Crear una nueva propiedad' })
   @ApiBearerAuth()
   @ApiConsumes('multipart/form-data')
