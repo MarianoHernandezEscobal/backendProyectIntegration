@@ -38,7 +38,7 @@ export class UserService {
     throw new HttpException(defaultMessage, 500);
   }
 
-  async create(create: User): Promise<AuthenticationResponseDto> {
+  async create(create: User): Promise<string> {
     try {
       const existingUser = await this.usersDatabaseService.findOneEmail(create.email);
       if (existingUser) {
@@ -49,13 +49,13 @@ export class UserService {
       const savedUser = await this.usersDatabaseService.create(create);
       const jwt = await this.generateJwt(savedUser);
 
-      return { access_token: jwt };
+      return jwt ;
     } catch (e) {
       this.handleException(e, 'Error al crear el usuario');
     }
   }
 
-  async login(user: AuthenticationRequestDto): Promise<AuthenticationResponseDto> {
+  async login(user: AuthenticationRequestDto): Promise<string> {
     try {
       const existingUser = await this.findUserByEmailOrThrow(user.email);
       const isPasswordValid = await bcrypt.compare(user.password, existingUser.password);
@@ -63,7 +63,8 @@ export class UserService {
         throw new BadRequestException('Contraseña incorrecta');
       }
       const jwt = await this.generateJwt(existingUser);
-      return { access_token: jwt };
+
+      return  jwt;
     } catch (e) {
       this.handleException(new UnauthorizedException(), 'Error al iniciar sesión');
     }
@@ -88,15 +89,15 @@ export class UserService {
     }
   }
 
-  async update(update: User, email: string): Promise<UserResponseDto> {
+  async update(update: User, email: string): Promise<string> {
     try {
       const user = await this.findUserByEmailOrThrow(email);
-      update.phone = User.formatPhoneNumber(update.phone);
+      update.phone = update ? User.formatPhoneNumber(update.phone) : user.phone;
       if (update.password) {
         update.password = await this.hashPassword(update.password);
       }
       const updatedUser = await this.usersDatabaseService.update(user, update);
-      return new UserResponseDto(updatedUser);
+      return this.generateJwt(updatedUser);
     } catch (e) {
       this.handleException(e, 'Error al actualizar el usuario');
     }

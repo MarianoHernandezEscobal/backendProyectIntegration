@@ -142,7 +142,7 @@ export class PropertyController {
   @ApiResponse({ status: 200, description: 'Propiedades obtenidas correctamente', type: Home })
   @ApiResponse({ status: 404, description: 'Propiedades no encontradas', type: NotFoundException })
   @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
-  async home(@Req() request: RequestWithUser): Promise<Home> {
+  async home(@Req() request: RequestWithUser,): Promise<Home> {
     return await this.propertyService.home(request.user);
   }
 

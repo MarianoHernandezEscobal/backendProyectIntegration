@@ -1,13 +1,13 @@
-// First we will create a module in nestjs that would 
-// be responsible for dealing with mail related services.
 import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { MailController } from './mail.controller';
 import { ConfigService } from '@nestjs/config';
+import { UserModule } from '@user/user.module';
 
 @Module({
   imports: [
+    UserModule,
     MailerModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         transport: {

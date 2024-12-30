@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Query, Req, UseGuards, Delete, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Query, Req, UseGuards, Delete, UsePipes, ValidationPipe, Res, } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '@user/dto/user.dto';
 import { AuthenticationResponseDto } from './dto/authentication.response.dto';
@@ -8,7 +8,7 @@ import { AuthGuard } from './guards/session.guard';
 import { RequestWithUser } from './interfaces/request.interface';
 import { RoleGuard } from './guards/admin.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-
+import {  FastifyReply } from 'fastify'; // FastifyReply es el tipo de respuesta de Fastify 
 @ApiTags('User')
 @Controller('user')
 export class UserController {
@@ -27,8 +27,22 @@ export class UserController {
   @ApiBody({ type: User })
   @ApiResponse({ status: 201, description: 'User created', type: AuthenticationResponseDto })
   @ApiResponse({ status: 400, description: 'Email already in use' })
-  async create(@Body('user') user: User): Promise<AuthenticationResponseDto> {
-    return await this.userService.create(user);
+  async create(
+    @Body('user') user: User,
+    @Res() response: FastifyReply
+    ): Promise<AuthenticationResponseDto> {
+    const token = await this.userService.create(user);
+    response.setCookie('session', token, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+    return response.status(200).send('Creado correctamente'); 
+  }
+
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) reply: FastifyReply): Promise<{ message: string }> {
+    reply.clearCookie('session', { path: '/' });
+    return { message: 'Logout exitoso' };
   }
 
   @Post('login')
@@ -37,8 +51,16 @@ export class UserController {
   @ApiBody({ type: AuthenticationRequestDto })
   @ApiResponse({ status: 200, description: 'Login successful', type: AuthenticationResponseDto })
   @ApiResponse({ status: 400, description: 'Invalid credentials' })
-  async login(@Body('user') user: AuthenticationRequestDto): Promise<AuthenticationResponseDto> {
-    return await this.userService.login(user);
+  async login(
+    @Body('user') user: AuthenticationRequestDto,
+    @Res() response: FastifyReply
+    ): Promise<AuthenticationResponseDto> {
+    const token = await this.userService.login(user);
+    response.setCookie('session', token, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+    return response.status(200).send('Inicio de session correcto'); 
   }
 
   @Get('profile')
@@ -88,8 +110,17 @@ export class UserController {
   @ApiBody({ type: User })
   @ApiResponse({ status: 200, description: 'User updated', type: UserResponseDto })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async update(@Body('user') user: User, @Req() request: RequestWithUser): Promise<UserResponseDto> {
-    return await this.userService.update(user, request.user.email);
+  async update(
+    @Body('user') user: User,
+    @Req() request: RequestWithUser,
+    @Res() response: FastifyReply
+  ): Promise<UserResponseDto> {
+    const updated =  await this.userService.update(user, request.user.email);
+    response.setCookie('session', updated, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+    return response.status(200).send('Actualizacion correcta'); 
   }
 
   @Delete('delete')

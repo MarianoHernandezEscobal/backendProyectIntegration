@@ -3,7 +3,7 @@ import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 export class SendMailDto {
   @IsEmail()
   @IsNotEmpty()
-  to: string;
+  from: string;
 
   @IsString()
   @IsNotEmpty()

@@ -10,7 +10,7 @@ export class RoleGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token = this.extractTokenFromCookie(request);
 
     if (!token) {
       throw new UnauthorizedException('Debe contar con un token de acceso');
@@ -27,17 +27,15 @@ export class RoleGuard implements CanActivate {
     }
   }
 
-  private extractTokenFromHeader(request: any): string | null {
-    const authorizationHeader = request.headers['authorization'];
-    if (!authorizationHeader) {
+  private extractTokenFromCookie(request: any): string | null {
+    const jwtCookie = request.cookies?.session;
+    if (!jwtCookie) {
       return null;
     }
-
-    const [type, token] = authorizationHeader.split(' ');
-    if (type !== 'Bearer' || !token) {
-      return null;
+    if (jwtCookie.startsWith('Bearer ')) {
+      return jwtCookie.replace('Bearer ', '');
     }
 
-    return token;
+    return jwtCookie;
   }
 }
