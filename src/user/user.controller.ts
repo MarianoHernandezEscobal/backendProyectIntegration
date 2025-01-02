@@ -8,7 +8,7 @@ import { AuthGuard } from './guards/session.guard';
 import { RequestWithUser } from './interfaces/request.interface';
 import { RoleGuard } from './guards/admin.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import {  FastifyReply } from 'fastify'; // FastifyReply es el tipo de respuesta de Fastify 
+import {  FastifyReply } from 'fastify';
 @ApiTags('User')
 @Controller('user')
 export class UserController {
@@ -34,14 +34,27 @@ export class UserController {
     const token = await this.userService.create(user);
     response.setCookie('session', token, {
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+      secure: false,
+      sameSite: "lax",
     });
+
+    response.setCookie('sessionIndicator', 'true', {
+      httpOnly: false,
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+      secure: false,
+      sameSite: 'lax',
+    });
+  
     return response.status(200).send('Creado correctamente'); 
   }
 
-  @Post('logout')
-  async logout(@Res({ passthrough: true }) reply: FastifyReply): Promise<{ message: string }> {
-    reply.clearCookie('session', { path: '/' });
+  @Get('logout')
+  async logout(@Res({ passthrough: true }) response: FastifyReply): Promise<{ message: string }> {
+    response.clearCookie('sessionUser', { path: '/' });
+    response.clearCookie('sessionIndicator', { path: '/', });
     return { message: 'Logout exitoso' };
   }
 
@@ -53,16 +66,30 @@ export class UserController {
   @ApiResponse({ status: 400, description: 'Invalid credentials' })
   async login(
     @Body('user') user: AuthenticationRequestDto,
-    @Res() response: FastifyReply
-    ): Promise<AuthenticationResponseDto> {
+    @Res({ passthrough: true }) response: FastifyReply
+  ): Promise<AuthenticationResponseDto> {
     const token = await this.userService.login(user);
-    response.setCookie('session', token, {
+    
+    response.setCookie('sessionUser', token, {
       httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge: 60 * 60 * 24,
+      path: '/',
+      secure: false,
+      sameSite: "lax",
     });
-    return response.status(200).send('Inicio de session correcto'); 
-  }
 
+    response.setCookie('sessionIndicator', 'true', {
+      httpOnly: false,
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+      secure: false,
+      sameSite: 'lax',
+    });
+  
+  
+    return response.status(200).send({ message: 'Inicio de sesión correcto' });
+  }
+  
   @Get('profile')
   @ApiOperation({ summary: 'Get user profile' })
   @ApiBearerAuth()

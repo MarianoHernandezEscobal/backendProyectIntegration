@@ -193,6 +193,19 @@ export class PropertyController {
     return await this.propertyService.getCreatedProperties(request.user);
   }
 
+  @Get('favorites')
+  @UseGuards(AuthGuard)
+  @ApiOperation({ summary: 'Obtener propiedades favoritas del usuario' })
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Propiedades favoritas encontradas', type: [PropertyDto] })
+  @ApiResponse({ status: 404, description: 'No se encontraron propiedades favoritas', type: NotFoundException })
+  @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
+  async favorites(
+    @Req() request: RequestWithUser
+  ): Promise<PropertyDto[]> {
+    return await this.propertyService.findFavourite(request.user);
+  }
+
   @Get('testTokens')
   async testTokens() {
     await this.propertyService.renewFacebookTokens();
