@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PropertyDto } from '@property/dto/property.dto';
 import { RentDTO } from '@rent/dto/rent.dto';
-import { IsString, IsEmail, IsBoolean, IsArray, IsOptional, IsNumber, MinLength } from 'class-validator';
+import { IsString, IsEmail, MinLength } from 'class-validator';
 
 
 export class User {

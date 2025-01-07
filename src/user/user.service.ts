@@ -2,13 +2,15 @@ import { Injectable, BadRequestException, HttpException, NotFoundException, Unau
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { User } from './dto/user.dto';
-import { AuthenticationResponseDto } from './dto/authentication.response.dto';
 import { UserResponseDto } from './dto/user.response.dto';
 import { UsersDatabaseService } from '@src/database/user/user.database.service';
 import { AuthenticationRequestDto } from './dto/authentication.request.dto';
 import { MESSAGES } from '@constants/messages';
 import { UserEntity } from '@src/database/user/user.entity';
 import { ConfigService } from '@nestjs/config';
+import { FastifyReply } from 'fastify';
+import { clearCookie, setCookie } from '@src/utiles/cookie.utils';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class UserService {
@@ -16,6 +18,7 @@ export class UserService {
     private readonly usersDatabaseService: UsersDatabaseService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly mailerService: MailerService,
   ) {}
 
   status(): string {
@@ -38,7 +41,7 @@ export class UserService {
     throw new HttpException(defaultMessage, 500);
   }
 
-  async create(create: User): Promise<string> {
+  async create(create: User, reply: FastifyReply): Promise<string> {
     try {
       const existingUser = await this.usersDatabaseService.findOneEmail(create.email);
       if (existingUser) {
@@ -48,14 +51,17 @@ export class UserService {
       create.password = await this.hashPassword(create.password);
       const savedUser = await this.usersDatabaseService.create(create);
       const jwt = await this.generateJwt(savedUser);
+      
+      setCookie(reply, this.configService.get<string>('SESSION_USER'), jwt, { maxAge: 60 * 60 * 24 * 7, httpOnly: true });
+      setCookie(reply, this.configService.get<string>('SESSION_INDICATOR'), jwt, { maxAge: 60 * 60 * 24 * 7, httpOnly: false });
 
-      return jwt ;
+      return jwt;
     } catch (e) {
       this.handleException(e, 'Error al crear el usuario');
     }
   }
 
-  async login(user: AuthenticationRequestDto): Promise<string> {
+  async login(user: AuthenticationRequestDto, reply: FastifyReply): Promise<string> {
     try {
       const existingUser = await this.findUserByEmailOrThrow(user.email);
       const isPasswordValid = await bcrypt.compare(user.password, existingUser.password);
@@ -64,10 +70,18 @@ export class UserService {
       }
       const jwt = await this.generateJwt(existingUser);
 
+      setCookie(reply, this.configService.get<string>('SESSION_USER'), jwt, { maxAge: 60 * 60 * 24 * 7, httpOnly: true });
+      setCookie(reply, this.configService.get<string>('SESSION_INDICATOR'), jwt, { maxAge: 60 * 60 * 24 * 7, httpOnly: false });
+
       return  jwt;
     } catch (e) {
       this.handleException(new UnauthorizedException(), 'Error al iniciar sesión');
     }
+  }
+
+  async logout(reply: FastifyReply): Promise<void> {
+    clearCookie(reply, this.configService.get<string>('SESSION_USER'));
+    clearCookie(reply, this.configService.get<string>('SESSION_INDICATOR'));
   }
 
   async profile(email: string): Promise<UserResponseDto> {
@@ -94,7 +108,7 @@ export class UserService {
       const user = await this.findUserByEmailOrThrow(email);
       update.phone = update ? User.formatPhoneNumber(update.phone) : user.phone;
       if (update.password) {
-        update.password = await this.hashPassword(update.password);
+        delete update.password;
       }
       const updatedUser = await this.usersDatabaseService.update(user, update);
       return this.generateJwt(updatedUser);
@@ -109,7 +123,7 @@ export class UserService {
 
       const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
       if (!isPasswordValid) {
-        throw new BadRequestException('Contraseña actual incorrecta');
+        throw new UnauthorizedException('Contraseña actual incorrecta');
       }
 
       const hashedPassword = await this.hashPassword(newPassword);
@@ -144,4 +158,41 @@ export class UserService {
     const saltRounds = +this.configService.get<string>('SALT') || 10;
     return bcrypt.hash(password, saltRounds);
   }
+
+  async requestPasswordReset(email: string): Promise<string> {
+      const user = await this.usersDatabaseService.findOneEmail(email);
+      if (!user) {
+        throw new BadRequestException('Usuario no encontrado');
+      }
+  
+      // Generar un token de restablecimiento
+      const resetToken = this.jwtService.sign(
+        { userId: user.id },
+        { secret: this.configService.get<string>('JWT_RESET_SECRET'), expiresIn: '1h' },
+      );
+  
+      const resetLink = `${this.configService.get<string>('FRONTEND_URL')}/reset-password?token=${resetToken}`;
+      await this.mailerService.sendMail({
+        to: email,
+        subject: 'Restablecimiento de contraseña',
+        text: `Haz clic en el siguiente enlace para restablecer tu contraseña: ${resetLink}`,
+      });
+  
+      return 'Se ha enviado un correo para restablecer la contraseña';
+    }
+  
+    async resetPassword(token: string, newPassword: string): Promise<string> {
+      try {
+        const payload = this.jwtService.verify(token, { secret: process.env.JWT_RESET_SECRET });
+        const user = await this.usersDatabaseService.findOne(payload.userId);
+        if (!user) {
+          throw new NotFoundException('Usuario no encontrado');
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        await this.usersDatabaseService.update(user, { ...user, password: hashedPassword });
+        return 'Contraseña restablecida correctamente';
+      } catch (error) {
+        throw new BadRequestException('Token inválido o expirado');
+      }
+    }
 }

@@ -135,7 +135,6 @@ export class PropertyDto {
         this.pinned = property.pinned;
         this.approved = property.approved;
         this.createdAt = property.createdAt;
-        this.usersWithFavourite = property?.usersWithFavourite;
         this.createdBy = property?.createdBy ? new UserResponseDto(property?.createdBy) : null;
         this.rents = property?.rents || [];
     }

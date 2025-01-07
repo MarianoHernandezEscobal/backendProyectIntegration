@@ -115,18 +115,6 @@ export class PropertyService {
     }
   }
 
-  async findFavourite(userRequest?: UserResponseDto): Promise<PropertyDto[]> {
-    try {
-      const user = await this.userDatabaseService.findOneEmail(userRequest.email, ['favoriteProperties']);
-      if (!user.favoriteProperties.length) {
-        throw new NotFoundException('Propiedades no encontradas');
-      }
-      return user.favoriteProperties.map(property => new PropertyDto(property));
-    } catch (e) {
-      this.handleException(e, 'Error al obtener las propiedades favoritas');
-    }
-  }
-
   async update(updateDto: PropertyDto, user: UserResponseDto, images: Array<File>): Promise<PropertyDto> {
     try {
       const property = await this.propertiesDatabaseService.findOne(
@@ -196,8 +184,15 @@ export class PropertyService {
     }
   }
 
-  async findAll(): Promise<PropertyDto[]> {
+  async findAll(userId?: string): Promise<PropertyDto[]> {
     try {
+      if (userId) {
+        const user = await this.userDatabaseService.findOne(+userId, ['favoriteProperties']);
+        if (!user) {
+          throw new NotFoundException('Usuario no encontrado');
+        }
+        
+      }
       const properties = await this.propertiesDatabaseService.findAll();
       if (!properties.length) {
         throw new NotFoundException('Propiedades no encontradas');

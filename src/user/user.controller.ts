@@ -12,7 +12,9 @@ import {  FastifyReply } from 'fastify';
 @ApiTags('User')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+  ) {}
 
   @Get('status')
   @ApiOperation({ summary: 'Check the status of the service' })
@@ -31,30 +33,13 @@ export class UserController {
     @Body('user') user: User,
     @Res() response: FastifyReply
     ): Promise<AuthenticationResponseDto> {
-    const token = await this.userService.create(user);
-    response.setCookie('session', token, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-      secure: false,
-      sameSite: "lax",
-    });
-
-    response.setCookie('sessionIndicator', 'true', {
-      httpOnly: false,
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-      secure: false,
-      sameSite: 'lax',
-    });
-  
-    return response.status(200).send('Creado correctamente'); 
+    await this.userService.create(user, response);
+    return response.status(201).send({ message: 'Creado correctamente' });
   }
 
   @Get('logout')
   async logout(@Res({ passthrough: true }) response: FastifyReply): Promise<{ message: string }> {
-    response.clearCookie('sessionUser', { path: '/' });
-    response.clearCookie('sessionIndicator', { path: '/', });
+    await this.userService.logout(response);
     return { message: 'Logout exitoso' };
   }
 
@@ -68,25 +53,7 @@ export class UserController {
     @Body('user') user: AuthenticationRequestDto,
     @Res({ passthrough: true }) response: FastifyReply
   ): Promise<AuthenticationResponseDto> {
-    const token = await this.userService.login(user);
-    
-    response.setCookie('sessionUser', token, {
-      httpOnly: true,
-      maxAge: 60 * 60 * 24,
-      path: '/',
-      secure: false,
-      sameSite: "lax",
-    });
-
-    response.setCookie('sessionIndicator', 'true', {
-      httpOnly: false,
-      maxAge: 60 * 60 * 24 * 7,
-      path: '/',
-      secure: false,
-      sameSite: 'lax',
-    });
-  
-  
+    await this.userService.login(user, response);
     return response.status(200).send({ message: 'Inicio de sesión correcto' });
   }
   
@@ -158,5 +125,18 @@ export class UserController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async delete(@Query('email') email, @Req() request: RequestWithUser): Promise<void> {
     return await this.userService.delete(email, request.user.email);
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string): Promise<string> {
+    return this.userService.requestPasswordReset(email);
+  }
+
+  @Post('reset-password')
+  async resetPassword(
+    @Body('token') token: string,
+    @Body('newPassword') newPassword: string,
+  ): Promise<string> {
+    return this.userService.resetPassword(token, newPassword);
   }
 }
