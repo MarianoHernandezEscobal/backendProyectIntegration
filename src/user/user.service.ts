@@ -52,8 +52,8 @@ export class UserService {
       const savedUser = await this.usersDatabaseService.create(create);
       const jwt = await this.generateJwt(savedUser);
       
-      setCookie(reply, this.configService.get<string>('SESSION_USER'), jwt, { maxAge: 60 * 60 * 24 * 7, httpOnly: true });
-      setCookie(reply, this.configService.get<string>('SESSION_INDICATOR'), jwt, { maxAge: 60 * 60 * 24 * 7, httpOnly: false });
+      setCookie(reply, this.configService.get<string>('SESSION_USER'), jwt, { httpOnly: true });
+      setCookie(reply, this.configService.get<string>('SESSION_INDICATOR'), jwt, { httpOnly: false });
 
       return jwt;
     } catch (e) {
@@ -70,8 +70,8 @@ export class UserService {
       }
       const jwt = await this.generateJwt(existingUser);
 
-      setCookie(reply, this.configService.get<string>('SESSION_USER'), jwt, { maxAge: 60 * 60 * 24 * 7, httpOnly: true });
-      setCookie(reply, this.configService.get<string>('SESSION_INDICATOR'), jwt, { maxAge: 60 * 60 * 24 * 7, httpOnly: false });
+      setCookie(reply, this.configService.get<string>('SESSION_USER'), jwt, { httpOnly: true });
+      setCookie(reply, this.configService.get<string>('SESSION_INDICATOR'), jwt, { httpOnly: false });
 
       return  jwt;
     } catch (e) {

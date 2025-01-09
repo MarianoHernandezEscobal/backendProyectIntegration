@@ -14,10 +14,11 @@ export class FavoritesController {
     @Req() request: RequestWithUser,
     @Query('propertyId') propertyId: number,
   ): Promise<PropertyEntity[]> {
-    return await this.favoritesService.addFavorite(request.user, propertyId);
+    return await this.favoritesService.addFavorite(request.user, +propertyId);
   }
 
   @Delete('delete')
+  @UseGuards(AuthGuard)
   async removeFavorite(
     @Req() request: RequestWithUser,
     @Query('propertyId') propertyId: number,
