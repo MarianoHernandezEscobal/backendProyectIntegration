@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, CreateDateColumn } f
 import { RentDTO } from '@src/rent/dto/rent.dto';
 import { UserEntity } from '../user/user.entity';
 import { PropertyEntity } from '../property/property.entity';
-import dayjs from 'dayjs';
+import { IsOptional } from 'class-validator';
 
 @Entity()
 export class RentEntity {
@@ -11,10 +11,10 @@ export class RentEntity {
     id: number;
 
     @Column({ type: 'datetime' })
-    dateStart: Date;
+    checkIn: Date;
 
     @Column({ type: 'datetime' })
-    dateEnd: Date;
+    checkOut: Date;
 
     @Column()
     price: number;
@@ -25,20 +25,25 @@ export class RentEntity {
     @Column()
     approved: boolean;
 
+    @Column()
+    email: string;
+
     @ManyToOne('UserEntity', 'rents')
-    user: UserEntity;
+    @IsOptional()
+    user?: UserEntity;
   
     @ManyToOne('PropertyEntity', 'rents')
     property: PropertyEntity;
 
 
-    static fromDto(rent: RentDTO, user: UserEntity, property: PropertyEntity, userAdmin: boolean): RentEntity {
+    static fromDto(rent: RentDTO, email:string, property: PropertyEntity, userAdmin: boolean, user?: UserEntity, ): RentEntity {
         const entity = new RentEntity();
-        entity.dateStart = rent.dateStart;
-        entity.dateEnd = rent.dateEnd;
+        entity.checkIn = rent.checkIn;
+        entity.checkOut = rent.checkOut;
         entity.price = property.price * (entity.dateEnd.getDate() - entity.dateStart.getDate());
         entity.approved = userAdmin;
         entity.user = user;
+        entity.email = email;
         entity.property = property;
         return entity;
     }

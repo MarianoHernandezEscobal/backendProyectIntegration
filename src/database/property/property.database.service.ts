@@ -46,7 +46,7 @@ export class PropertiesDatabaseService {
     return this.propertyRepository.find({ where: { approved: false } });
   }
 
-  async update(property: PropertyEntity, updateDto: PropertyDto): Promise<PropertyEntity | null> {
+  async update(property: PropertyEntity, updateDto: PropertyEntity): Promise<PropertyEntity | null> {
     const updatedProperty = this.propertyRepository.merge(property, updateDto);
     const savedProperty = await this.propertyRepository.save(updatedProperty);
     return savedProperty;

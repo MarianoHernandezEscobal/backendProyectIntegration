@@ -7,6 +7,7 @@ import { DatabaseModule } from '@src/database/database.module';
 import { RentService } from './rent.service';
 import { RentEntity } from '@src/database/rents/rents.entity';
 import { UserModule } from '@user/user.module';
+import { MailModule } from '@src/mail/mail.module';
 
 
 @Module({
@@ -14,6 +15,7 @@ import { UserModule } from '@user/user.module';
     DatabaseModule,
     UserModule,
     TypeOrmModule.forFeature([UserEntity, PropertyEntity, RentEntity]),
+    MailModule,
   ],
   providers: [RentService],
   controllers: [RentController],

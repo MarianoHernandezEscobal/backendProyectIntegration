@@ -136,6 +136,6 @@ export class PropertyDto {
         this.approved = property.approved;
         this.createdAt = property.createdAt;
         this.createdBy = property?.createdBy ? new UserResponseDto(property?.createdBy) : null;
-        this.rents = property?.rents || [];
+        this.rents = property?.rents ? property.rents.map( rent => RentDTO.fromEntity(rent)): [];
     }
 }

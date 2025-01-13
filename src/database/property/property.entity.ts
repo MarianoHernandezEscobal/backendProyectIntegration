@@ -125,5 +125,9 @@ export class PropertyEntity {
         entity.createdBy = user;
         return entity;
     }
+
+    static toDto(property: PropertyEntity): PropertyDto {
+        return new PropertyDto(property);
+    }
 }
 

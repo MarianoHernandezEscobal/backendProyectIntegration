@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PropertyDto } from '@property/dto/property.dto';
 import { RentDTO } from '@rent/dto/rent.dto';
+import { PropertyEntity } from '@src/database/property/property.entity';
+import { RentEntity } from '@src/database/rents/rents.entity';
 import { IsString, IsEmail, MinLength } from 'class-validator';
 
 
@@ -34,13 +36,13 @@ export class User {
     isActive: boolean;
 
     @ApiProperty({ description: 'Propiedades favoritas del usuario' })
-    favoriteProperties: PropertyDto[];
+    favoriteProperties: PropertyEntity[];
 
     @ApiProperty({ description: 'Propiedades creadas por el usuario' })
-    propertiesCreated: PropertyDto[];
+    propertiesCreated: PropertyEntity[];
 
     @ApiProperty({ description: 'Alquileres del usuario' })
-    rents: RentDTO[];
+    rents: RentEntity[];
 
     @ApiProperty({ description: 'Indica si el usuario es administrador', example: false })
     admin: boolean;

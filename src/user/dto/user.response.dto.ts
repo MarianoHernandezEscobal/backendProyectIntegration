@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from './user.dto';
+import { UserEntity } from '@src/database/user/user.entity';
 
 export class UserResponseDto {
     @ApiProperty({ description: 'ID del usuario', example: 1 })
@@ -23,7 +24,7 @@ export class UserResponseDto {
     @ApiProperty({ description: 'Indica si el usuario es administrador', example: false })
     phone: string;
 
-    constructor(user: User) {
+    constructor(user: UserEntity) {
         this.firstName = user.firstName;
         this.email = user.email;
         this.phone = user.phone;

@@ -134,7 +134,8 @@ export class PropertyService {
       }
 
       const oldProperty = new PropertyDto(property);
-      const updatedProperty = await this.propertiesDatabaseService.update(property, updateDto);
+
+      const updatedProperty = await this.propertiesDatabaseService.update(property, PropertyEntity.fromDto(updateDto, property.createdBy));
 
       if (updatedProperty.approved) {
         await Promise.all([

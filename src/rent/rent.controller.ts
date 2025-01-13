@@ -1,25 +1,27 @@
-import { Controller, Post, Body, UsePipes, Param, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, UsePipes, Param, Get, UseGuards, Req, UseInterceptors } from '@nestjs/common';
 import { RentService } from './rent.service';
 import { RentDTO } from './dto/rent.dto';
 import { RentTransformPipe } from './pipes/rent.transform.pipe';
 import { RentEntity } from '@databaseRent/rents.entity';
 import { AuthGuard } from '@user/guards/session.guard';
 import { RequestWithUser } from '@user/interfaces/request.interface';
+import { RoleGuard } from '@src/user/guards/admin.guard';
+import { EmailInterceptor } from './interceptor/email.interceptor';
+import { plainToInstance } from 'class-transformer';
 
 @Controller('rent')
 export class RentController {
   constructor(private readonly rentService: RentService) {}
 
   @Post('create')
-  @UsePipes(new RentTransformPipe())
-  @UseGuards(AuthGuard)
+  @UseInterceptors(EmailInterceptor)
   async addFavorite(
     @Body('rent') rent: RentDTO,
-    @Req() request: RequestWithUser
   ): Promise<void> {
-    return await this.rentService.create(rent, request.user.admin);
+    const rentTransformed = plainToInstance(RentDTO, rent, { enableImplicitConversion: true });
+    return await this.rentService.create(rentTransformed);
   }
-
+  
   @Get('user/:id')
   async getByUser(
     @Param('id') userId: number,
@@ -41,6 +43,7 @@ export class RentController {
   }
 
   @Get('approved')
+  @UseGuards(AuthGuard, RoleGuard)
   async approveRent(
   ): Promise<RentEntity[]> {
     return await this.rentService.findToApproved();
