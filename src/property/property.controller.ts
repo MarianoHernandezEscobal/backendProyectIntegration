@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   NotFoundException,
@@ -20,6 +21,7 @@ import { RequestWithUser } from '@user/interfaces/request.interface';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiQuery, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
 import { TokenGuard } from './guards/token.guard';
 import { FilesInterceptor, File } from '@nest-lab/fastify-multer';
+import { RoleGuard } from '@src/user/guards/admin.guard';
 
 
 
@@ -101,6 +103,21 @@ export class PropertyController {
   @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
   async termsAndConditions(): Promise<string> {
     return await this.propertyService.getTermsAndConditions();
+  }
+
+  @Delete('delete')
+  @UseGuards(AuthGuard, RoleGuard)
+  @ApiOperation({ summary: 'Eliminar una propiedad existente' })
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'id', type: 'string', description: 'ID de la propiedad a eliminar' })
+  @ApiResponse({ status: 200, description: 'Propiedad eliminada exitosamente' })
+  @ApiResponse({ status: 401, description: 'No autorizado (Token faltante o inválido)', type: UnauthorizedException })
+  @ApiResponse({ status: 404, description: 'Propiedad no encontrada', type: NotFoundException })
+  @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
+  async delete(
+    @Query('id') id: string,
+  ): Promise<void> {
+    await this.propertyService.remove(id);
   }
 
 

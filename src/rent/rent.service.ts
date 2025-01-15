@@ -84,7 +84,7 @@ export class RentService {
       const emailContent = `
               <h1>Propiedad: ${property.title}</h1>
       <br />
-        <div>Se creó un alquiler desde el día ${rent.dateStart.toLocaleDateString()} al ${rent.dateEnd.toLocaleDateString()}</div>
+        <div>Se creó un alquiler desde el día ${rent.checkIn.toLocaleDateString()} al ${rent.checkOut.toLocaleDateString()}</div>
         <h3>Toda reserva está sujeta a aprobación de nuestra inmobiliaria. A la brevedad nos pondremos en contacto con usted.</h3>
       `;
       await this.mailerService.sendNotificationRent(

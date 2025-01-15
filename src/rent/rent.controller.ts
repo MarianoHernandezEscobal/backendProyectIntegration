@@ -1,10 +1,8 @@
 import { Controller, Post, Body, UsePipes, Param, Get, UseGuards, Req, UseInterceptors } from '@nestjs/common';
 import { RentService } from './rent.service';
 import { RentDTO } from './dto/rent.dto';
-import { RentTransformPipe } from './pipes/rent.transform.pipe';
 import { RentEntity } from '@databaseRent/rents.entity';
 import { AuthGuard } from '@user/guards/session.guard';
-import { RequestWithUser } from '@user/interfaces/request.interface';
 import { RoleGuard } from '@src/user/guards/admin.guard';
 import { EmailInterceptor } from './interceptor/email.interceptor';
 import { plainToInstance } from 'class-transformer';

@@ -22,12 +22,12 @@ export class RentsDatabaseService {
         });
     }
 
-    findRentsInDateRange(dateStart: Date, dateEnd: Date, property: PropertyEntity): Promise<RentEntity[]> {
+    findRentsInDateRange(checkIn: Date, checkOut: Date, property: PropertyEntity): Promise<RentEntity[]> {
         return this.rentRepository.find({
             where: {
                 property: { id: property.id },
-                dateStart: LessThanOrEqual(dateEnd),
-                dateEnd: MoreThanOrEqual(dateStart),
+                checkIn: LessThanOrEqual(checkOut),
+                checkOut: MoreThanOrEqual(checkIn),
             },
         });
     }

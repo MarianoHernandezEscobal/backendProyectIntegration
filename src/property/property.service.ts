@@ -276,4 +276,5 @@ export class PropertyService {
       console.error('Error al actualizar el post de Facebook:', error);
     }
   }
+
 }

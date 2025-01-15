@@ -40,7 +40,7 @@ export class RentEntity {
         const entity = new RentEntity();
         entity.checkIn = rent.checkIn;
         entity.checkOut = rent.checkOut;
-        entity.price = property.price * (entity.dateEnd.getDate() - entity.dateStart.getDate());
+        entity.price = property.price * (entity.checkOut.getDate() - entity.checkIn.getDate());
         entity.approved = userAdmin;
         entity.user = user;
         entity.email = email;
