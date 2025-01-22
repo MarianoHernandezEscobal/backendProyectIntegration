@@ -2,10 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 import { PropertyEntity } from './property.entity';
-import { PropertyDto } from '@src/property/dto/property.dto';
 import { PropertyStatus } from '@src/enums/status.enum';
 import { ConfigService } from '@nestjs/config';
-import { User } from '@src/user/dto/user.dto';
 
 @Injectable()
 export class PropertiesDatabaseService {
@@ -39,7 +37,7 @@ export class PropertiesDatabaseService {
 
   
   findTitle(title: string): Promise<PropertyEntity | null> {
-    return this.propertyRepository.findOneBy({ title });
+    return this.propertyRepository.findOneBy({ title, approved: true });
   }
 
   async findToApprove(): Promise<PropertyEntity[]> {
@@ -78,10 +76,10 @@ export class PropertiesDatabaseService {
   }
 
   async findCreatedProperties(userId: number): Promise<PropertyEntity[]> {
-    return this.propertyRepository.find({ where: { createdBy: { id: userId } } });
+    return this.propertyRepository.find({ where: { createdBy: { id: userId }, approved: true } });
   }
 
   async findAll(): Promise<PropertyEntity[]> {
-    return this.propertyRepository.find();
+    return this.propertyRepository.find({ where: { approved:true } });
   }
 }
