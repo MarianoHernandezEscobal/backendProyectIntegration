@@ -56,6 +56,18 @@ export class UserController {
     await this.userService.login(user, response);
     return response.status(200).send({ message: 'Inicio de sesión correcto' });
   }
+
+  //creame el get de todos los usuarios
+  @Get('all')
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
+  @ApiResponse({ status: 200, description: 'All users retrieved', type: [UserResponseDto] })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  async all(): Promise<UserResponseDto[]> {
+    return await this.userService.all();
+  }
   
   @Get('profile')
   @ApiOperation({ summary: 'Get user profile' })

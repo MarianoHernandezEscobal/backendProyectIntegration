@@ -17,7 +17,7 @@ import {
       const token = this.extractTokenFromCookie(request);
   
       if (!token && !request.body.rent.email) {
-        throw new UnauthorizedException('Access token or email is missing');
+        throw new UnauthorizedException('Ocurrio un problema con su sesión');
       }
   
       if (token) {
@@ -28,7 +28,7 @@ import {
           if(request.body.rent.email) {
             return next.handle();
           }
-          throw new UnauthorizedException('Invalid or expired access token');
+          throw new UnauthorizedException('Ocurrio un problema con su sesión');
         }
       }
   

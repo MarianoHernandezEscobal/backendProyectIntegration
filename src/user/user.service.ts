@@ -195,4 +195,13 @@ export class UserService {
         throw new BadRequestException('Token inválido o expirado');
       }
     }
+
+  async all(): Promise<UserResponseDto[]> {
+    try {
+      const users = await this.usersDatabaseService.findAll();
+      return users.map((user) => new UserResponseDto(user));
+    } catch (e) {
+      this.handleException(e, 'Error al buscar los usuarios');
+    }
+  }
 }
