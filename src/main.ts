@@ -20,6 +20,8 @@ async function bootstrap() {
     credentials: true,
   });
 
+  console.log(configService.get<string>('CORS_ORIGIN'));
+
   await app.register(fastifyCookie, { secret: 'eeeeeee' });
   
   // Configuración de Swagger
