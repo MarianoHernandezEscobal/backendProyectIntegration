@@ -13,25 +13,15 @@ async function bootstrap() {
   );
 
   const configService = app.get(ConfigService);
-  const allowedOrigins = JSON.parse(configService.get<string>('CORS_ORIGIN'));
 
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      } else {
-        return callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: configService.get<string>('CORS_ORIGIN'),
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
   });
 
   await app.register(fastifyCookie, { secret: configService.get<string>('COOKIE_SECRET') });
 
-  // Configuración de Swagger
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Inmobiliaria API')
     .setDescription('Inmobiliaria Costa Azul Back End')
