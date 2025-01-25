@@ -13,16 +13,14 @@ async function bootstrap() {
   );
 
   const configService = app.get(ConfigService);
-
+  const corsOrigin = JSON.parse(configService.get<string>('CORS_ORIGIN'));
   app.enableCors({
-    origin: '*',
+    origin: corsOrigin,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
   });
 
-  console.log(configService.get<string>('CORS_ORIGIN'));
-
-  await app.register(fastifyCookie, { secret: 'eeeeeee' });
+  await app.register(fastifyCookie, { secret: configService.get<string>('COOKIE_SECRET') });
   
   // Configuración de Swagger
   const swaggerConfig = new DocumentBuilder()

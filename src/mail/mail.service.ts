@@ -30,8 +30,8 @@ export class MailService {
       `;
       const emailBody = {
         from: userRequest
-          ? `${userRequest.firstName} ${userRequest.lastName} <${userRequest.email}>`
-          : body.from,
+          ? `"${userRequest.firstName} ${userRequest.lastName}" <${userRequest.email}>`
+          : `"${body.name}" <${body.from}>`,
         replyTo: userRequest?.email ?? body.from,
         to: body.isRent ? this.configService.get('MAIL_RENT') : this.configService.get('MAIL_SALE'),
         subject: body.subject || 'Consulta sobre propiedad',

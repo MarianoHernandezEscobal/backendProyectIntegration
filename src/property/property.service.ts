@@ -48,10 +48,7 @@ export class PropertyService {
       const user = await this.userDatabaseService.findOne(userRequest.id);
      
       const entity = PropertyEntity.fromDto(create, user);
-      const imageUrls = await Promise.all(
-        images.map(file => this.s3Service.uploadFile(file.buffer, file.originalname))
-      );
-      entity.imageSrc = imageUrls;
+      entity.imageSrc = await this.uploadImagesToS3(images);
       const savedProperty = await this.propertiesDatabaseService.create(entity);
 
       if (savedProperty.approved) {
@@ -115,41 +112,84 @@ export class PropertyService {
     }
   }
 
-  async update(updateDto: PropertyDto, user: UserResponseDto, images: Array<File>): Promise<PropertyDto> {
+  async update(
+    updateDto: PropertyDto,
+    user: UserResponseDto,
+    deleteImages: string[], // Ahora acepta URLs o claves S3 directamente
+    newImages: Array<File>
+  ): Promise<PropertyDto> {
     try {
-      const property = await this.propertiesDatabaseService.findOne(
-        updateDto.id,
-        ['usersWithFavourite', 'createdBy', 'rents']
-      );
+      // Validar propiedad y permisos
+      const property = await this.propertiesDatabaseService.findOne(updateDto.id, [
+        'usersWithFavourite',
+        'createdBy',
+        'rents',
+      ]);
+  
       if (!property) {
         throw new NotFoundException('Propiedad no encontrada');
       }
-
+  
       if (!user.admin && updateDto?.approved !== undefined) {
         throw new UnauthorizedException('No tienes permisos para aprobar la propiedad');
       }
-
+  
       if (!user.admin) {
         delete updateDto.approved;
       }
-
+  
+      // Eliminar y subir imágenes
+      const [deletedKeys, newImageUrls] = await Promise.allSettled([
+        this.deleteImagesFromS3(deleteImages),
+        this.uploadImagesToS3(newImages),
+      ]);
+  
+      // Filtrar imágenes eliminadas y agregar nuevas
+      updateDto.imageSrc = [
+        ...property.imageSrc.filter((img) => !(deletedKeys.status === 'fulfilled' && deletedKeys.value.includes(img))),
+        ...(newImageUrls.status === 'fulfilled' ? newImageUrls.value : []),
+      ];
+  
       const oldProperty = new PropertyDto(property);
-
-      const updatedProperty = await this.propertiesDatabaseService.update(property, PropertyEntity.fromDto(updateDto, property.createdBy));
-
+  
+      // Actualizar la propiedad
+      const updatedProperty = await this.propertiesDatabaseService.update(
+        property,
+        PropertyEntity.fromDto(updateDto, property.createdBy),
+      );
+  
       if (updatedProperty.approved) {
         await Promise.all([
           this.updatePostFacebook(updatedProperty, oldProperty),
-          this.sendMessages(updatedProperty)
+          this.sendMessages(updatedProperty),
         ]);
       }
-
+  
       return new PropertyDto(updatedProperty);
-    } catch (e) {
-      this.handleException(e, 'Error al actualizar la propiedad');
+    } catch (error) {
+      this.handleException(error, 'Error al actualizar la propiedad');
+      throw error;
     }
   }
-
+  
+  
+  private async deleteImagesFromS3(imageKeys: string[]): Promise<string[]> {
+    if (!imageKeys.length) return [];
+    return Promise.all(
+      imageKeys.map(async (key) => {
+        await this.s3Service.deleteFile(key);
+        return key;
+      }),
+    );
+  }
+  
+  private async uploadImagesToS3(images: Array<File>): Promise<string[]> {
+    if (!images.length) return [];
+    return Promise.all(
+      images.map((file) => this.s3Service.uploadFile(file.buffer, file.originalname)),
+    );
+  }
+  
   private validatePropertyStatus(status: string): PropertyStatus {
     const propertyType = Object.values(PropertyStatus).find(type => type === status);
     if (!propertyType) {

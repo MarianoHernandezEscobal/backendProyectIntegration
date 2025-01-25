@@ -7,6 +7,7 @@ import {
   HttpException,
   NotFoundException,
   Post,
+  Put,
   Query,
   Req,
   UnauthorizedException,
@@ -121,9 +122,9 @@ export class PropertyController {
   }
 
 
-  @Post('update')
+  @Put('update')
   @UseGuards(AuthGuard)
-  @UseInterceptors(FilesInterceptor("files", 4))
+  @UseInterceptors(FilesInterceptor("files", 25))
   @ApiOperation({ summary: 'Actualizar una propiedad existente' })
   @ApiBearerAuth()
   @ApiBody({ description: 'Datos de la propiedad para actualizar', type: PropertyDto })
@@ -133,11 +134,18 @@ export class PropertyController {
   @ApiResponse({ status: 500, description: 'Error interno del servidor', type: HttpException })
   async update(
     @Body('property') property: string,
-    @UploadedFiles() files: Array<File>,
+    @Body('deletedImages') deletedImages: string,
+    @UploadedFiles() newImages: Array<File>,
     @Req() request: RequestWithUser
   ): Promise<PropertyDto> {
-    const propertyDto: PropertyDto = JSON.parse(property);
-    return await this.propertyService.update(propertyDto, request.user, files);
+    try{
+      const propertyDto: PropertyDto = JSON.parse(property);
+      const imagesDeleted: string[] = JSON.parse(deletedImages);
+      return await this.propertyService.update(propertyDto, request.user, imagesDeleted, newImages);
+    }catch(error){
+      console.log(error);
+    }
+
   }
 
     @Get('findOne')

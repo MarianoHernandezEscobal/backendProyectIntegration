@@ -15,7 +15,6 @@ import { UserModule } from '@user/user.module';
           secure: true,
           port: 465,
           auth: {
-            // Account gmail address
             user: configService.get('MAIL_USER'),
             pass: configService.get('MAIL_PASSWORD'),
 
