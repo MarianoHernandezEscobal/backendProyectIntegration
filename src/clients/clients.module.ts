@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { FacebookClient } from './facebook/facebook.client';
 import { HttpModule } from '@nestjs/axios';
+import { WhatsAppClient } from './whatsapp/whatsapp.client';
 
 @Module({
   imports: [ 
@@ -9,7 +10,7 @@ import { HttpModule } from '@nestjs/axios';
         maxRedirects: 5
     }),
 ],
-  providers: [FacebookClient ],//WhatsAppClient
-  exports: [FacebookClient ],//WhatsAppClient
+  providers: [FacebookClient, WhatsAppClient ],
+  exports: [FacebookClient, WhatsAppClient ],
 })
 export class ClientsModule {}
