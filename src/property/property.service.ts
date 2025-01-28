@@ -15,6 +15,8 @@ import { UsersDatabaseService } from '@databaseUser/user.database.service';
 import { MESSAGES } from '@src/constants/messages';
 import { S3Service } from '@src/s3/s3.service';
 import { File } from '@nest-lab/fastify-multer';
+import { updateEnvFile } from '@src/utiles/editEnv';
+import { restartApplication } from '@src/utiles/restartApp';
 
 @Injectable()
 export class PropertyService {
@@ -49,10 +51,11 @@ export class PropertyService {
      
       const entity = PropertyEntity.fromDto(create, user);
       entity.imageSrc = await this.uploadImagesToS3(images);
+      entity.approved = user.admin;
       const savedProperty = await this.propertiesDatabaseService.create(entity);
 
       if (savedProperty.approved) {
-        await this.facebookService.createPost(new CreatePost(savedProperty));
+        await firstValueFrom(this.facebookService.createPost(new CreatePost(savedProperty)));
       }
 
       return new PropertyDto(savedProperty);
@@ -281,21 +284,28 @@ export class PropertyService {
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async renewFacebookTokens() {
     try {
+      console.log('[Facebook Token Refresh] Iniciando...');
+
       const userTokenResponse = await firstValueFrom(this.facebookService.renewAccessTokenUser());
-      this.configService.get<string>('FACEBOOK_USER_ACCESSTOKEN', userTokenResponse.access_token); // Actualiza con ConfigService
-      console.log('Nuevo User Access Token:', userTokenResponse.access_token);
-  
+      const newUserToken = userTokenResponse.access_token;
+
       const pageTokensResponse = await firstValueFrom(this.facebookService.renewAccessTokenPage());
-      console.log('Nuevo Page Access Token:', pageTokensResponse.data);
-  
       const pageAccessToken = pageTokensResponse.data[0]?.access_token;
-      if (pageAccessToken) {
-        this.configService.get<string>('FACEBOOK_ACCESSTOKEN', pageAccessToken); // Actualiza con ConfigService
-        console.log('Nuevo Page Access Token:', pageAccessToken);
+
+      if (newUserToken && pageAccessToken) {
+        console.log('[Facebook] Nuevos Access Tokens obtenidos.');
+        
+        // 🔹 Guardar en el .env y en `process.env`
+        await updateEnvFile({
+          FACEBOOK_USER_ACCESS_TOKEN: newUserToken,
+          FACEBOOK_PAGE_ACCESS_TOKEN: pageAccessToken,
+        });
+
+        // 🔹 Reiniciar la aplicación automáticamente para recargar variables
+        await restartApplication();
       }
-  
     } catch (error) {
-      console.error('Error al renovar el Access Token:', error);
+      console.error('[Facebook] Error al renovar Access Token:', error);
     }
   }
 

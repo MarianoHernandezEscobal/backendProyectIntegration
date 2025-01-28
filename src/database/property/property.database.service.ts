@@ -80,6 +80,9 @@ export class PropertiesDatabaseService {
   }
 
   async findAll(): Promise<PropertyEntity[]> {
-    return this.propertyRepository.find({ where: { approved:true } });
+    return this.propertyRepository.find({ 
+      where: { approved:true },
+      order: { pinned: 'DESC',createdAt: 'ASC' },
+    });
   }
 }
