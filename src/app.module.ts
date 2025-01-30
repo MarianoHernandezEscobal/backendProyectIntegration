@@ -5,6 +5,7 @@ import { PropertyModule } from './property/property.module';
 import { FavoritesModule } from './favorite/favorite.module';
 import { RentModule } from './rent/rent.module';
 import { MailModule } from './mail/mail.module';
+import { RecaptchaClient } from './clients/recaptcha/recaptcha.client';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { MailModule } from './mail/mail.module';
     FavoritesModule,
     RentModule,
     MailModule,
+    RecaptchaClient
   ],
 })
 export class AppModule {}
