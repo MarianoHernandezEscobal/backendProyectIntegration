@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { FacebookClient } from './facebook/facebook.client';
 import { HttpModule } from '@nestjs/axios';
 import { WhatsAppClient } from './whatsapp/whatsapp.client';
+import { RecaptchaClient } from './recaptcha/recaptcha.client';
 
 @Module({
   imports: [ 
@@ -10,7 +11,7 @@ import { WhatsAppClient } from './whatsapp/whatsapp.client';
         maxRedirects: 5
     }),
 ],
-  providers: [FacebookClient, WhatsAppClient ],
-  exports: [FacebookClient, WhatsAppClient ],
+  providers: [FacebookClient, WhatsAppClient, RecaptchaClient ],
+  exports: [FacebookClient, WhatsAppClient, RecaptchaClient ],
 })
 export class ClientsModule {}

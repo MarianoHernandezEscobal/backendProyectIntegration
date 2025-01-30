@@ -31,7 +31,7 @@ export class PropertiesDatabaseService {
 
   findOneByStatus(id: number, status: PropertyStatus): Promise<PropertyEntity | null> {
     return this.propertyRepository.findOne({
-      where: { id, status },
+      where: { id, status, approved: true },
     });
   }
 

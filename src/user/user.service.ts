@@ -11,6 +11,8 @@ import { ConfigService } from '@nestjs/config';
 import { FastifyReply } from 'fastify';
 import { clearCookie, setCookie } from '@src/utiles/cookie.utils';
 import { MailerService } from '@nestjs-modules/mailer';
+import { RecaptchaClient } from '@src/clients/recaptcha/recaptcha.client';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class UserService {
@@ -19,6 +21,7 @@ export class UserService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailerService: MailerService,
+    private readonly recaptchaClient: RecaptchaClient,
   ) {}
 
   status(): string {
@@ -202,6 +205,17 @@ export class UserService {
       return users.map((user) => new UserResponseDto(user));
     } catch (e) {
       this.handleException(e, 'Error al buscar los usuarios');
+    }
+  }
+
+  async validateToken(token: string): Promise<boolean> {
+    try {
+      const response = await lastValueFrom(this.recaptchaClient.validateToken(token));
+
+      return response.success;
+    } catch (error) {
+      console.error("Error validando reCAPTCHA:", error);
+      return false;
     }
   }
 }

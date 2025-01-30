@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Body, Query, Req, UseGuards, Delete, UsePipes, ValidationPipe, Res, } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Query, Req, UseGuards, Delete, UsePipes, ValidationPipe, Res, HttpException, HttpStatus, } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from '@user/dto/user.dto';
 import { AuthenticationResponseDto } from './dto/authentication.response.dto';
@@ -151,4 +151,16 @@ export class UserController {
   ): Promise<string> {
     return this.userService.resetPassword(token, newPassword);
   }
+
+  @Post('validate-recaptcha')
+  async validateRecaptcha(@Body("recaptchaToken") recaptchaToken: string) {
+    const isValid = await this.userService.validateToken(recaptchaToken);
+    
+    if (!isValid) {
+      throw new HttpException("Error en la validación de reCAPTCHA", HttpStatus.FORBIDDEN);
+    }
+
+    return { success: true };
+  }
 }
+
