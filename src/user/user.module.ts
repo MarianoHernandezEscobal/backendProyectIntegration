@@ -5,11 +5,13 @@ import { UserService } from './user.service';
 import { DatabaseModule } from '@src/database/database.module';
 import { ConfigService } from '@nestjs/config';
 import { FastifyMulterModule } from '@nest-lab/fastify-multer';
+import { ClientsModule } from '@src/clients/clients.module';
 
 @Module({
   imports: [
     FastifyMulterModule,
     DatabaseModule,
+    ClientsModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({

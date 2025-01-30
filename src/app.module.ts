@@ -18,7 +18,6 @@ import { RecaptchaClient } from './clients/recaptcha/recaptcha.client';
     FavoritesModule,
     RentModule,
     MailModule,
-    RecaptchaClient
   ],
 })
 export class AppModule {}
