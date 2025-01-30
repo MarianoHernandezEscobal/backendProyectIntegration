@@ -18,7 +18,6 @@ export class WhatsAppClient implements OnModuleInit {
       this.client = new Client({
         authStrategy: new LocalAuth(), // Guarda la sesión en el servidor
         puppeteer: {
-          executablePath: '/usr/bin/chromium-browser',
           headless: true, // Modo sin interfaz gráfica
           args: [
             '--no-sandbox',
@@ -27,12 +26,7 @@ export class WhatsAppClient implements OnModuleInit {
             '--disable-dev-shm-usage',
             '--disable-software-rasterizer',
             '--disable-extensions',
-            '--disable-background-timer-throttling',
-            '--disable-backgrounding-occluded-windows',
-            '--disable-renderer-backgrounding',
-            '--disable-accelerated-2d-canvas',
             '--single-process',
-            '--no-zygote'
           ],
         }
       });
