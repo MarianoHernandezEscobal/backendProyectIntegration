@@ -74,6 +74,10 @@ export class PropertyDto {
     @IsBoolean()
     garage: boolean;
 
+    @ApiProperty({ description: 'Tiene piscina' })
+    @IsBoolean()
+    pool: boolean;
+
     @ApiProperty({ description: 'Imágenes de la propiedad', isArray: true })
     @IsArray()
     @IsString({ each: true })
@@ -122,6 +126,7 @@ export class PropertyDto {
         this.status = property?.status || [];
         this.lotSize = property.lotSize;
         this.area = property.area;
+        this.pool = property.pool;
         this.rooms = property.rooms;
         this.bathrooms = property.bathrooms;
         this.address = property.address;

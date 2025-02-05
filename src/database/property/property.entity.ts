@@ -62,6 +62,9 @@ export class PropertyEntity {
     @Column()
     garage: boolean;
 
+    @Column()
+    pool: boolean;
+
     @Column({ type: 'simple-array' })
     imageSrc: string[];
 
