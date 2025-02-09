@@ -124,6 +124,7 @@ export class PropertyEntity {
         entity.garage = property.garage;
         entity.contribution = property.contribution;
         entity.pinned = false;
+        entity.pool = property.pool;
         entity.approved = user.admin;
         entity.createdBy = user;
         return entity;
