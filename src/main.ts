@@ -11,7 +11,7 @@ import fastifyCookie from '@fastify/cookie';
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({ bodyLimit: 10 * 1024 * 1024 * 1024 }) // 10 GB
+    new FastifyAdapter()
   );
 
   const configService = app.get(ConfigService);
