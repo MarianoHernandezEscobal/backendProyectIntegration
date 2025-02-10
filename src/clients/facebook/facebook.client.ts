@@ -15,7 +15,7 @@ export class FacebookClient {
   createPost(body: CreatePost): Observable<any> {
     const facebookUrl = this.configService.get<string>('FACEBOOK_URL');
     const pageId = this.configService.get<string>('FACEBOOK_PAGE_ID');
-    const accessToken = this.configService.get<string>('FACEBOOK_PAGE_ACCESS_TOKEN');
+    const accessToken = this.configService.get<string>('FACEBOOK_USER_ACCESS_TOKEN');
 
     return this.httpService.post(
       `${facebookUrl}${pageId}/feed`,
@@ -32,7 +32,7 @@ export class FacebookClient {
   // Actualizar una publicación en Facebook
   updatePost(body: CreatePost, id: string): Observable<any> {
     const facebookUrl = this.configService.get<string>('FACEBOOK_URL');
-    const accessToken = this.configService.get<string>('FACEBOOK_PAGE_ACCESS_TOKEN');
+    const accessToken = this.configService.get<string>('FACEBOOK_USER_ACCESS_TOKEN');
 
     return this.httpService.post(
       `${facebookUrl}${id}`,
@@ -87,7 +87,7 @@ export class FacebookClient {
   getPost(): Observable<PostFacebook[]> {
     const facebookUrl = this.configService.get<string>('FACEBOOK_URL');
     const pageId = this.configService.get<string>('FACEBOOK_PAGE_ID');
-    const accessToken = this.configService.get<string>('FACEBOOK_PAGE_ACCESS_TOKEN');
+    const accessToken = this.configService.get<string>('FACEBOOK_USER_ACCESS_TOKEN');
 
     return this.httpService.get(`${facebookUrl}${pageId}/feed`, {
       params: { access_token: accessToken },
