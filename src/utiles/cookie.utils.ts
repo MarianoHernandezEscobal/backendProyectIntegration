@@ -9,15 +9,14 @@ export const setCookie = (
     maxAge?: number;
     path?: string;
     secure?: boolean;
-    sameSite?: 'lax' | 'strict' | 'none';
+    sameSite?: 'lax' | 'strict' | 'None';
   } = {}
 ): void => {
   reply.setCookie(name, value, {
     httpOnly: options.httpOnly ?? true,
     maxAge: options.maxAge ?? 60 * 60 * 24, // 1 day in seconds
     path: options.path ?? '/',
-    secure: options.secure ?? false,
-    sameSite: options.sameSite ?? 'none',
+    secure: options.secure ?? false
   });
 };
 
