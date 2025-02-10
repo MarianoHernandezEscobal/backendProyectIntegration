@@ -17,7 +17,7 @@ export const setCookie = (
     maxAge: options.maxAge ?? 60 * 60 * 24, // 1 day in seconds
     path: options.path ?? '/',
     secure: options.secure ?? false,
-    sameSite: options.sameSite ?? 'lax',
+    sameSite: options.sameSite ?? 'none',
   });
 };
 

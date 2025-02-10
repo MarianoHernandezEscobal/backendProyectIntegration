@@ -1,6 +1,8 @@
-// main.ts
 import { NestFactory } from '@nestjs/core';
-import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
@@ -9,7 +11,7 @@ import fastifyCookie from '@fastify/cookie';
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter(),
+    new FastifyAdapter({ bodyLimit: 10 * 1024 * 1024 * 1024 }) // 10 GB
   );
 
   const configService = app.get(ConfigService);
@@ -20,7 +22,9 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.register(fastifyCookie, { secret: configService.get<string>('COOKIE_SECRET') });
+  await app.register(fastifyCookie, {
+    secret: configService.get<string>('COOKIE_SECRET'),
+  });
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Inmobiliaria API')
@@ -37,6 +41,5 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`Application is running on: ${await app.getUrl()} in ${env} mode`);
 }
-
 
 bootstrap();
