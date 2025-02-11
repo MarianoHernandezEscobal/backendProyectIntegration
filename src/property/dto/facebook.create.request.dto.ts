@@ -7,9 +7,9 @@ export class CreatePost {
     published: boolean;
 
     constructor(property: PropertyEntity){
-        const { URL_INMO, FACEBOOK_USER_ACCESS_TOKEN } = process.env;
+        const { FRONTEND_URL, FACEBOOK_USER_ACCESS_TOKEN } = process.env;
         this.message = `${property.title}\n${property.description}`;
-        this.link = `${URL_INMO}${property.id}`;
+        this.link = `${FRONTEND_URL}/properties/${property.id}`;
         this.access_token = FACEBOOK_USER_ACCESS_TOKEN;
         this.published = property.approved;
 
