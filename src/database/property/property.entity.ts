@@ -18,7 +18,7 @@ export class PropertyEntity {
     @Column()
     description: string;
     
-    @Column()
+    @Column({ type: 'longtext' })
     longDescription: string;
 
     @Column()
