@@ -3,10 +3,10 @@ import { PropertyDto } from "./property.dto";
 
 export class Home{
     @ApiProperty({ type: [PropertyDto], description: 'Propiedades en alquiler' })
-    rent: PropertyDto[];
+    properties: PropertyDto[];
   
     @ApiProperty({ type: [PropertyDto], description: 'Propiedades en venta' })
-    sale: PropertyDto[];
+    land: PropertyDto[];
   
     @ApiProperty({ type: [PropertyDto], description: 'Propiedades pineadas' })
     pinned: PropertyDto[];

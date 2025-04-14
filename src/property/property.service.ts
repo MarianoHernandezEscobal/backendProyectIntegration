@@ -8,7 +8,7 @@ import { UserResponseDto } from '@user/dto/user.response.dto';
 import { FacebookClient } from '@clients/facebook/facebook.client';
 import { CreatePost } from './dto/facebook.create.request.dto';
 import { firstValueFrom } from 'rxjs';
-import { WhatsAppClient } from '@src/clients/whatsapp/whatsapp.client';
+//import { WhatsAppClient } from '@src/clients/whatsapp/whatsapp.client';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
 import { UsersDatabaseService } from '@databaseUser/user.database.service';
@@ -17,6 +17,7 @@ import { S3Service } from '@src/s3/s3.service';
 import { File } from '@nest-lab/fastify-multer';
 import { updateEnvFile } from '@src/utiles/editEnv';
 import { restartApplication } from '@src/utiles/restartApp';
+import { PropertyTypes } from '@src/enums/types.enum';
 
 @Injectable()
 export class PropertyService {
@@ -25,7 +26,7 @@ export class PropertyService {
     private readonly propertiesDatabaseService: PropertiesDatabaseService,
     private readonly userDatabaseService: UsersDatabaseService,
     private readonly facebookService: FacebookClient,
-    private readonly whatsApp: WhatsAppClient,
+    //private readonly whatsApp: WhatsAppClient,
     private readonly configService: ConfigService,
   ) {}
 
@@ -88,9 +89,9 @@ export class PropertyService {
   async home(userRequest?: UserResponseDto): Promise<Home> {
     try {
       // Ejecutar consultas en paralelo
-      const [rent, sale, pinned, user] = await Promise.all([
-        this.propertiesDatabaseService.findHome(PropertyStatus.ForRent),
+      const [properties, land, pinned, user] = await Promise.all([
         this.propertiesDatabaseService.findHome(PropertyStatus.ForSale),
+        this.propertiesDatabaseService.findHome(null, PropertyTypes.LAND),
         this.propertiesDatabaseService.findPinned(),
         userRequest ? this.userDatabaseService.findOneEmail(userRequest.email, ['favoriteProperties', 'propertiesCreated']) : null,
       ]);
@@ -99,13 +100,13 @@ export class PropertyService {
         throw new BadRequestException(MESSAGES.USER_NOT_FOUND);
       }
 
-      if (!rent.length && !sale.length && !pinned.length) {
+      if (!properties.length && !land.length && !pinned.length) {
         throw new NotFoundException('No se encontraron propiedades');
       }
 
       return {
-        rent: rent.map(property => new PropertyDto(property)),
-        sale: sale.map(property => new PropertyDto(property)),
+        properties: properties.map(property => new PropertyDto(property)),
+        land: land.map(property => new PropertyDto(property)),
         pinned: pinned.map(property => new PropertyDto(property)),
         favourites: user ? user.favoriteProperties.map(property => new PropertyDto(property)) : [],
         created: user ? user.propertiesCreated.map(property => new PropertyDto(property)) : [],
@@ -277,7 +278,7 @@ export class PropertyService {
     const propertie = await this.propertiesDatabaseService.findOne(property.id, ['usersWithFavourite']);
     const users = propertie.usersWithFavourite;
     users.forEach(user => {
-      this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);
+      // this.whatsApp.sendMessage(user.phone, `Hola ${user.firstName}, se actualizo tu propiedad favorita ${property.title}\n${URL_INMO}${property.id}`);
     });
   }
 
@@ -295,13 +296,11 @@ export class PropertyService {
       if (newUserToken && pageAccessToken) {
         console.log('[Facebook] Nuevos Access Tokens obtenidos.');
         
-        // 🔹 Guardar en el .env y en `process.env`
         await updateEnvFile({
           FACEBOOK_USER_ACCESS_TOKEN: newUserToken,
           FACEBOOK_PAGE_ACCESS_TOKEN: pageAccessToken,
         });
 
-        // 🔹 Reiniciar la aplicación automáticamente para recargar variables
         await restartApplication();
       }
     } catch (error) {

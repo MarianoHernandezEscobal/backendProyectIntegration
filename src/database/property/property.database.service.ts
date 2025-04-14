@@ -4,6 +4,7 @@ import { FindOneOptions, Repository } from 'typeorm';
 import { PropertyEntity } from './property.entity';
 import { PropertyStatus } from '@src/enums/status.enum';
 import { ConfigService } from '@nestjs/config';
+import { PropertyTypes } from '@src/enums/types.enum';
 
 @Injectable()
 export class PropertiesDatabaseService {
@@ -50,12 +51,26 @@ export class PropertiesDatabaseService {
     return savedProperty;
   }
 
-  async findHome(status: PropertyStatus): Promise<PropertyEntity[]> {
+  async findHome(status?: PropertyStatus, type?: PropertyTypes): Promise<PropertyEntity[]> {
+    const where: any = {
+      pinned: false,
+      approved: true,
+    };
+
+    if (status) {
+      where.status = status;
+    }
+  
+    if (type) {
+      where.type = type;
+    }
+  
     return this.propertyRepository.find({
-      where: { status, pinned: false, approved: true },
+      where,
       order: { createdAt: 'DESC' },
     });
   }
+  
 
   async remove(id: number): Promise<void> {
     await this.propertyRepository.delete(id);
@@ -80,9 +95,10 @@ export class PropertiesDatabaseService {
   }
 
   async findAll(): Promise<PropertyEntity[]> {
-    return this.propertyRepository.find({ 
+    const properties = await this.propertyRepository.find({ 
       where: { approved:true },
       order: { pinned: 'DESC',createdAt: 'ASC' },
     });
+    return properties;
   }
 }
