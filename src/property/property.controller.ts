@@ -27,7 +27,7 @@ import { RoleGuard } from '@src/user/guards/admin.guard';
 
 
 @ApiTags('Properties')
-@Controller('property')
+@Controller('properties')
 export class PropertyController {
   constructor(
     private readonly propertyService: PropertyService,

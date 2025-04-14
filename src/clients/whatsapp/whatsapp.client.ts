@@ -18,7 +18,7 @@ export class WhatsAppClient implements OnModuleInit {
       this.client = new Client({
         authStrategy: new LocalAuth(), // Guarda la sesión en el servidor
         puppeteer: {
-          headless: true, // Modo sin interfaz gráfica
+          headless: false, // Modo sin interfaz gráfica
           args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -66,7 +66,6 @@ export class WhatsAppClient implements OnModuleInit {
     }
   }
 
-  // Método para enviar mensajes
   async sendMessage(to: string, message: string) {
     try {
       if (!this.client) {
