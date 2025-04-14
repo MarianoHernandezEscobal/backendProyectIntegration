@@ -18,15 +18,11 @@ export class WhatsAppClient implements OnModuleInit {
       this.client = new Client({
         authStrategy: new LocalAuth(), // Guarda la sesión en el servidor
         puppeteer: {
-          headless: true, // Modo sin interfaz gráfica
+          headless: true,
+	  timeout:6000,
           args: [
             '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-gpu',
-            '--disable-dev-shm-usage',
-            '--disable-software-rasterizer',
-            '--disable-extensions',
-            '--single-process',
+            '--disable-setuid-sandbox'
           ],
         }
       });
