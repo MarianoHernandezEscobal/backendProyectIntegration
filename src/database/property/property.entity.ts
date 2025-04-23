@@ -71,6 +71,9 @@ export class PropertyEntity {
     @Column()
     contribution: string;
 
+    @Column({default: '[{"title":"Casa Principal","values":[{"title":"Techo","value":"Chapa"},{"title":"Piso","value":"Parque"}]},{"title":"Casa Secundaria","values":[{"title":"Techo","value":"Plancha"},{"title":"Piso","value":"Ceramica"}]}]'})
+    features: string;
+
     @Column({ default: false })
     pinned: boolean;
 

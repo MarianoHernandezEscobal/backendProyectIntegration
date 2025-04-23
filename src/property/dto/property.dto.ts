@@ -87,6 +87,10 @@ export class PropertyDto {
     @IsString()
     contribution: string;
 
+    @ApiProperty({ description: 'Caracteristicas' })
+    @IsString()
+    features: string;
+
     @ApiProperty({ description: 'Propiedad pineada', default: false })
     @IsOptional()
     @IsBoolean()
@@ -139,6 +143,7 @@ export class PropertyDto {
         this.garage = property.garage;
         this.pinned = property.pinned;
         this.approved = property.approved;
+        this.features = property?.features || "";
         this.createdAt = property.createdAt;
         this.createdBy = property?.createdBy ? new UserResponseDto(property?.createdBy) : null;
         this.rents = property?.rents ? property.rents.map( rent => RentDTO.fromEntity(rent)): [];
