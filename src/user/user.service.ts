@@ -13,6 +13,7 @@ import { clearCookie, setCookie } from '@src/utiles/cookie.utils';
 import { MailerService } from '@nestjs-modules/mailer';
 import { RecaptchaClient } from '@src/clients/recaptcha/recaptcha.client';
 import { lastValueFrom } from 'rxjs';
+import { AuthenticationResponseDto } from './dto/authentication.response.dto';
 
 @Injectable()
 export class UserService {
@@ -64,7 +65,7 @@ export class UserService {
     }
   }
 
-  async login(user: AuthenticationRequestDto, reply: FastifyReply): Promise<string> {
+  async login(user: AuthenticationRequestDto): Promise<AuthenticationResponseDto> {
     try {
       const existingUser = await this.findUserByEmailOrThrow(user.email);
       const isPasswordValid = await bcrypt.compare(user.password, existingUser.password);
@@ -72,11 +73,7 @@ export class UserService {
         throw new BadRequestException('Contraseña incorrecta');
       }
       const jwt = await this.generateJwt(existingUser);
-
-      setCookie(reply, this.configService.get<string>('SESSION_USER'), jwt, { httpOnly: true });
-      setCookie(reply, this.configService.get<string>('SESSION_INDICATOR'), '', { httpOnly: false });
-
-      return  jwt;
+      return new AuthenticationResponseDto(jwt, existingUser);
     } catch (e) {
       this.handleException(new UnauthorizedException(), 'Error al iniciar sesión');
     }

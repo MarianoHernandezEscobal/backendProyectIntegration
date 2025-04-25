@@ -45,16 +45,10 @@ export class UserController {
 
   @Post('login')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  @ApiOperation({ summary: 'Login a user' })
-  @ApiBody({ type: AuthenticationRequestDto })
-  @ApiResponse({ status: 200, description: 'Login successful', type: AuthenticationResponseDto })
-  @ApiResponse({ status: 400, description: 'Invalid credentials' })
   async login(
     @Body('user') user: AuthenticationRequestDto,
-    @Res({ passthrough: true }) response: FastifyReply
   ): Promise<AuthenticationResponseDto> {
-    await this.userService.login(user, response);
-    return response.status(200).send({ message: 'Inicio de sesión correcto' });
+    return await this.userService.login(user);
   }
 
   //creame el get de todos los usuarios

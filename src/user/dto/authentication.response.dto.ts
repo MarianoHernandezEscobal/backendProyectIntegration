@@ -1,10 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { UserEntity } from '@src/database/user/user.entity';
+import { UserResponseDto } from './user.response.dto';
 
 export class AuthenticationResponseDto {
-    @ApiProperty({ description: 'Token de acceso JWT', example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
-    message: string;
+    user: UserResponseDto;
+    token: string;
 
-    constructor(access_token: string) {
-        this.message = access_token;
+    constructor(access_token: string, user: UserEntity) {
+        this.token = access_token;
+        this.user = new UserResponseDto(user);
     }
 }
