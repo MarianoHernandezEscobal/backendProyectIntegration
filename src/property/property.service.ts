@@ -56,7 +56,7 @@ export class PropertyService {
       const savedProperty = await this.propertiesDatabaseService.create(entity);
 
       if (savedProperty.approved) {
-        await firstValueFrom(this.facebookService.createPost(new CreatePost(savedProperty)));
+        // await firstValueFrom(this.facebookService.createPost(new CreatePost(savedProperty)));
       }
 
       return new PropertyDto(savedProperty);
@@ -162,12 +162,12 @@ export class PropertyService {
         PropertyEntity.fromDto(updateDto, property.createdBy),
       );
   
-      if (updatedProperty.approved) {
-        await Promise.all([
-          this.updatePostFacebook(updatedProperty, oldProperty),
-          this.sendMessages(updatedProperty),
-        ]);
-      }
+      // if (updatedProperty.approved) {
+      //   await Promise.all([
+      //     this.updatePostFacebook(updatedProperty, oldProperty),
+      //     this.sendMessages(updatedProperty),
+      //   ]);
+      // }
   
       return new PropertyDto(updatedProperty);
     } catch (error) {
@@ -314,7 +314,7 @@ export class PropertyService {
       if (!post) {
         return;
       }
-      const filterPost = post.find(p => p.message === `${oldProperty.title}\n${oldProperty.description}`);
+      const filterPost = post.find(p => p.message === `${oldProperty.title}\n${oldProperty.shortDescription}`);
       if (filterPost) {
         await firstValueFrom(this.facebookService.updatePost(new CreatePost(updatedProperty), filterPost.id));
         return;

@@ -10,7 +10,7 @@ export class AuthGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromCookie(request);
+    const token = request.headers['authorization']?.split(' ')[1];
 
     if (!token) {
       throw new UnauthorizedException('Access token is missing');
@@ -25,15 +25,4 @@ export class AuthGuard implements CanActivate {
     }
   }
 
-  private extractTokenFromCookie(request: any): string | null {
-    const jwtCookie = request.cookies?.sessionUser;
-    if (!jwtCookie) {
-      return null;
-    }
-    if (jwtCookie.startsWith('Bearer ')) {
-      return jwtCookie.replace('Bearer ', '');
-    }
-
-    return jwtCookie;
-  }
 }

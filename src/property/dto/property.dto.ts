@@ -19,7 +19,7 @@ export class PropertyDto {
 
     @ApiProperty({ description: 'Descripción de la propiedad' })
     @IsString()
-    description: string;
+    shortDescription: string;
 
     @ApiProperty({ description: 'Descripción de la larga de la propiedad' })
     @IsString()
@@ -85,7 +85,7 @@ export class PropertyDto {
 
     @ApiProperty({ description: 'Contribución' })
     @IsString()
-    contribution: string;
+    contribution: number;
 
     @ApiProperty({ description: 'Caracteristicas' })
     @IsString()
@@ -124,7 +124,7 @@ export class PropertyDto {
     constructor(property: PropertyEntity) {
         this.id = property.id;
         this.title = property.title;
-        this.description = property.description;
+        this.shortDescription = property.description;
         this.price = property.price;
         this.type = property.type;
         this.status = property?.status || [];

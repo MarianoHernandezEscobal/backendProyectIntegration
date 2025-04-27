@@ -10,7 +10,7 @@ export class RoleGuard implements CanActivate {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromCookie(request);
+    const token = request.headers['authorization']?.split(' ')[1];
 
     if (!token) {
       throw new UnauthorizedException('Debe contar con un token de acceso');

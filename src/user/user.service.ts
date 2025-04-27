@@ -103,7 +103,7 @@ export class UserService {
     }
   }
 
-  async update(update: User, email: string): Promise<string> {
+  async update(update: User, email: string): Promise<AuthenticationResponseDto> {
     try {
       const user = await this.findUserByEmailOrThrow(email);
       update.phone = update ? User.formatPhoneNumber(update.phone) : user.phone;
@@ -111,7 +111,8 @@ export class UserService {
         delete update.password;
       }
       const updatedUser = await this.usersDatabaseService.update(user, update);
-      return this.generateJwt(updatedUser);
+      const jwt = await this.generateJwt(updatedUser);
+      return new AuthenticationResponseDto(jwt, updatedUser);
     } catch (e) {
       this.handleException(e, 'Error al actualizar el usuario');
     }

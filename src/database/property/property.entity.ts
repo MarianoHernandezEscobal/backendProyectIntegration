@@ -69,9 +69,9 @@ export class PropertyEntity {
     imageSrc: string[];
 
     @Column()
-    contribution: string;
+    contribution: number;
 
-    @Column({default: '[{"title":"Casa Principal","values":[{"title":"Techo","value":"Chapa"},{"title":"Piso","value":"Parque"}]},{"title":"Casa Secundaria","values":[{"title":"Techo","value":"Plancha"},{"title":"Piso","value":"Ceramica"}]}]'})
+    @Column()
     features: string;
 
     @Column({ default: false })
@@ -96,7 +96,7 @@ export class PropertyEntity {
     static fromDto(property: PropertyDto, user: UserEntity): PropertyEntity {
         const entity = new PropertyEntity();
         entity.title = property.title;
-        entity.description = property.description;
+        entity.description = property.shortDescription;
         entity.price = property.price;
         const propertyType = Object.values(PropertyTypes).find((type) => type === property.type);
         if (!propertyType) {
@@ -126,10 +126,11 @@ export class PropertyEntity {
         entity.longDescription = property.longDescription;
         entity.garage = property.garage;
         entity.contribution = property.contribution;
-        entity.pinned = false;
+        entity.pinned = user.admin ? property.pinned : false;
         entity.pool = property.pool;
         entity.approved = user.admin;
         entity.createdBy = user;
+        entity.features = property.features;
         return entity;
     }
 

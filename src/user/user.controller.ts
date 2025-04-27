@@ -87,13 +87,7 @@ export class UserController {
   }
 
   @Put('changePassword')
-  @ApiOperation({ summary: 'Change user password' })
-  @ApiBearerAuth()
   @UseGuards(AuthGuard)
-  @ApiBody({ schema: { properties: { currentPassword: { type: 'string' }, newPassword: { type: 'string' } } } })
-  @ApiResponse({ status: 200, description: 'Password changed successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid current password' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async changePassword(
     @Body('currentPassword') currentPassword: string,
     @Body('newPassword') newPassword: string,
@@ -104,23 +98,12 @@ export class UserController {
   }
 
   @Put('update') 
-  @ApiOperation({ summary: 'Update user information' })
-  @ApiBearerAuth()
   @UseGuards(AuthGuard)
-  @ApiBody({ type: User })
-  @ApiResponse({ status: 200, description: 'User updated', type: UserResponseDto })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async update(
     @Body('user') user: User,
     @Req() request: RequestWithUser,
-    @Res() response: FastifyReply
-  ): Promise<UserResponseDto> {
-    const updated =  await this.userService.update(user, request.user.email);
-    response.setCookie('session', updated, {
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24,
-    });
-    return response.status(200).send('Actualizacion correcta'); 
+  ): Promise<AuthenticationResponseDto> {
+    return await this.userService.update(user, request.user.email);
   }
 
   @Delete('delete')

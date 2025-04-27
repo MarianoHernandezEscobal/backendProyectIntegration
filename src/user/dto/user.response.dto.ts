@@ -24,6 +24,9 @@ export class UserResponseDto {
     @ApiProperty({ description: 'Indica si el usuario es administrador', example: false })
     phone: string;
 
+    @ApiProperty({ description: 'Fecha de creación del usuario', example: '2023-01-01T00:00:00Z' })
+    createdAt: Date;
+
     constructor(user: UserEntity) {
         this.firstName = user.firstName;
         this.email = user.email;
@@ -31,5 +34,6 @@ export class UserResponseDto {
         this.lastName = user.lastName;
         this.isActive = user.isActive;
         this.admin = user.admin;
+        this.createdAt = user.createdAt;
     }
 }
